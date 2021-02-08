@@ -3,6 +3,7 @@
 namespace Nacho;
 
 use InvalidArgumentException;
+use Parsedown;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Parser;
 use Nacho\Helpers\RequestInterface;
@@ -16,6 +17,7 @@ class Nacho
     private $metaHeaders;
     private $yamlParser;
     private $config;
+    private Parsedown $mdParser;
 
     public function __construct(RequestInterface $request, UserHandlerInterface $userHandler)
     {
@@ -25,6 +27,7 @@ class Nacho
         $this->metaHeaders = [];
         $this->config = [];
         $this->yamlParser = null;
+        $this->mdParser = new Parsedown();
     }
 
     public function getRequest()
