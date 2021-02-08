@@ -12,8 +12,9 @@
         "twig/twig": "^1.36",
         "symfony/yaml": "^5.2"
     },
+    "license": "MIT",
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "Nacho\\": "src/"
         }
     },
