@@ -1,0 +1,19 @@
+{
+    "name": "kristophersson/nacho",
+    "description": "My own Lightweight PHP Framework",
+    "authors": [
+        {
+            "name": "Kristophersson",
+            "email": "swiss8oy.chg@gmail.com"
+        }
+    ],
+    "require": {
+        "twig/twig": "^1.36"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nacho\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
