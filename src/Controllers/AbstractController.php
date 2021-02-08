@@ -2,8 +2,6 @@
 
 namespace Nacho\Controllers;
 
-use Nacho\Security\JsonUserHandler;
-use Nacho\Security\UserHandlerInterface;
 use Nacho\Nacho;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -27,22 +25,10 @@ abstract class AbstractController
             $this->twig->addFunction(new TwigFunction('base64_encode', 'base64_encode'));
             $this->twig->addFunction(new TwigFunction('base64_decode', 'base64_decode'));
             $this->twig->addFunction(new TwigFunction('is_array', 'is_array'));
-            $this->twig->addFunction(new TwigFunction('month_index', function($var) {
-                return array_search($var, MONTHS);
-            }));
             $this->twig->addFunction(new TwigFunction('is_granted', [$this, 'is_granted']));
         }
 
         return $this->twig;
-    }
-
-    protected function error404()
-    {
-        $url = $_SERVER['REQUEST_URI'];
-
-        return $this->render('404.twig', [
-            'route' => $url,
-        ]);
     }
 
     protected function redirect(string $route)

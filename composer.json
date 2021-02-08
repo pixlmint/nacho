@@ -3,12 +3,14 @@
     "description": "My own Lightweight PHP Framework",
     "authors": [
         {
-            "name": "Kristophersson",
+            "name": "Christian Gröber",
             "email": "swiss8oy.chg@gmail.com"
         }
     ],
     "require": {
-        "twig/twig": "^1.36"
+        "php": "7.4.*",
+        "twig/twig": "^1.36",
+        "symfony/yaml": "^5.2"
     },
     "autoload": {
         "psr-4": {
