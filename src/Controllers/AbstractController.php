@@ -41,6 +41,7 @@ abstract class AbstractController
     protected function json(array $json = [], int $code = 200)
     {
         header("HTTP/1.1 ${code}");
+        header("content-type: application/json");
         
         return json_encode($json);
     }
