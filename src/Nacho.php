@@ -230,40 +230,53 @@ class Nacho
             }
 
             $url = $this->getPageUrl($id);
-            $rawContent = $this->loadFileContent($file);
+            $rawMarkdown = $this->loadFileContent($file);
+            $rawContent = $this->prepareFileContent($rawMarkdown);
 
             $headers = $this->getMetaHeaders();
             try {
-                $meta = $this->parseFileMeta($rawContent, $headers);
+                $meta = $this->parseFileMeta($rawMarkdown, $headers);
             } catch (ParseException $e) {
                 $meta = $this->parseFileMeta('', $headers);
                 $meta['YAML_ParseError'] = $e->getMessage();
             }
 
             // build page data
-            // title, description, author and date are assumed to be pretty basic data
-            // everything else is accessible through $page['meta']
             $page = array(
                 'id' => $id,
                 'url' => $url,
-                'title' => &$meta['title'],
-                'description' => &$meta['description'],
-                'author' => &$meta['author'],
-                'time' => &$meta['time'],
-                'date' => &$meta['date'],
-                'date_formatted' => &$meta['date_formatted'],
                 'hidden' => ($meta['hidden'] || preg_match('/(?:^|\/)_/', $id)),
+                'raw_markdown' => &$rawMarkdown,
                 'raw_content' => &$rawContent,
                 'meta' => &$meta,
                 'file' => $file,
             );
 
-            unset($rawContent, $meta);
+            unset($rawContent, $rawMarkdown, $meta);
 
             if ($page !== null) {
                 $this->pages[$id] = $page;
             }
         }
+    }
+
+    protected function implode_recursive(string $separator = '', array $arr)
+    {
+        $ret = '';
+        foreach($arr as $key => $value) {
+            if (is_array($value)) {
+                $ret .= $separator . $key . ': ' . $this->implode_recursive($separator, $value);
+            } else {
+                $ret .= $separator . $key . ': ' . $value;
+            }
+        }
+
+        return $ret;
+    }
+
+    public function createMetaString(array $meta)
+    {
+        return "---" . $this->implode_recursive("\n", $meta) . "\n---\n";
     }
 
     public function loadFileContent($file)
