@@ -17,4 +17,6 @@ interface UserHandlerInterface
     public function logout();
 
     public function isGranted(string $minRight = 'Guest', ?array $user = null);
+
+    public function modifyUser(string $username, string $key, mixed $newVar);
 }
