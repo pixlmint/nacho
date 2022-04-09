@@ -12,7 +12,7 @@ interface UserHandlerInterface
 
     public function findUser(string $username);
 
-    public function changePassword(string $oldPassword, string $newPassword);
+    public function changePassword(string $username, string $oldPassword, string $newPassword);
 
     public function logout();
 

@@ -22,22 +22,15 @@ class JsonUserHandler implements UserHandlerInterface
         return json_decode(file_get_contents(FILE_PATH), true);
     }
 
-    public function changePassword(string $oldPassword, string $newPassword)
+    public function changePassword(string $username, string $oldPassword, string $newPassword)
     {
-        $currentUser = $this->getCurrentUser();
-        if (!password_verify($oldPassword, $currentUser['password'])) {
+        $user = $this->findUser($username);
+        if (!password_verify($oldPassword, $user['password'])) {
             throw new \Exception('The Passwords don\'t match');
         }
 
-        $json = $this->getUsers();
-        foreach ($json as $key => $user) {
-            if ($user['username'] === $currentUser['username']) {
-                $user['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
-                $json[$key] = $user;
-                break;
-            }
-        }
-        file_put_contents(FILE_PATH, json_encode($json));
+        $user['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
+        $this->changeUser($user);
 
         return true;
     }
@@ -70,5 +63,25 @@ class JsonUserHandler implements UserHandlerInterface
         }
 
         return array_search($user['role'], $this->getRoles()) <= array_search($minRight, $this->getRoles());
+    }
+
+    public function modifyUser(string $username, string $newKey, mixed $newVar)
+    {
+        $user = $this->findUser($username);
+        $user[$newKey] = $newVar;
+        $this->changeUser($user);
+        return $user;
+    }
+
+    private function changeUser(array $user): void
+    {
+        $json = $this->getUsers();
+        foreach ($json as $key => $user) {
+            if ($user['username'] === $user['username']) {
+                $json[$key] = $user;
+                break;
+            }
+        }
+        file_put_contents(FILE_PATH, json_encode($json));
     }
 }
