@@ -65,7 +65,7 @@ class JsonUserHandler implements UserHandlerInterface
         return array_search($user['role'], $this->getRoles()) <= array_search($minRight, $this->getRoles());
     }
 
-    public function modifyUser(string $username, string $newKey, mixed $newVar)
+    public function modifyUser(string $username, string $newKey, $newVar)
     {
         $user = $this->findUser($username);
         $user[$newKey] = $newVar;
