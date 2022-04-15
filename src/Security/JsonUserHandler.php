@@ -29,10 +29,18 @@ class JsonUserHandler implements UserHandlerInterface
             throw new \Exception('The Passwords don\'t match');
         }
 
+        $this->setPassword($username, $newPassword);
+
+        return true;
+    }
+
+    public function setPassword(string $username, string $newPassword)
+    {
+
         $user['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
         $this->changeUser($user);
 
-        return true;
+        return $user;
     }
 
     public function findUser($username)

@@ -14,6 +14,8 @@ interface UserHandlerInterface
 
     public function changePassword(string $username, string $oldPassword, string $newPassword);
 
+    public function setPassword(string $username, string $newPassword);
+
     public function logout();
 
     public function isGranted(string $minRight = 'Guest', ?array $user = null);
