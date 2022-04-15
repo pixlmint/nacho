@@ -73,12 +73,12 @@ class JsonUserHandler implements UserHandlerInterface
         return $user;
     }
 
-    private function changeUser(array $user): void
+    private function changeUser(array $newUser): void
     {
         $json = $this->getUsers();
         foreach ($json as $key => $user) {
-            if ($user['username'] === $user['username']) {
-                $json[$key] = $user;
+            if ($user['username'] === $newUser['username']) {
+                $json[$key] = $newUser;
                 break;
             }
         }
