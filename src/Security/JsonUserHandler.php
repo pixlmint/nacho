@@ -36,7 +36,7 @@ class JsonUserHandler implements UserHandlerInterface
 
     public function setPassword(string $username, string $newPassword)
     {
-
+        $user = $this->findUser($username);
         $user['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
         $this->changeUser($user);
 
