@@ -25,13 +25,19 @@ class JsonUserHandler implements UserHandlerInterface
     public function changePassword(string $username, string $oldPassword, string $newPassword)
     {
         $user = $this->findUser($username);
-        if (!password_verify($oldPassword, $user['password'])) {
+        if (!$this->passwordVerify($username, $oldPassword)) {
             throw new \Exception('The Passwords don\'t match');
         }
 
         $this->setPassword($username, $newPassword);
 
         return true;
+    }
+
+    public function passwordVerify(string $username, string $password): bool
+    {
+        $user = $this->findUser($username);
+        return password_verify($password, $user['password']);
     }
 
     public function setPassword(string $username, string $newPassword)
