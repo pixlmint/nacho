@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Nacho\Security;
+namespace Nacho\Contracts;
 
 
 interface UserHandlerInterface

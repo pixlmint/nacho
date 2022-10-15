@@ -1,6 +1,8 @@
 <?php
 
-namespace Nacho\Helpers;
+namespace Nacho\Models;
+
+use Nacho\Contracts\RequestInterface;
 
 class Request implements RequestInterface
 {

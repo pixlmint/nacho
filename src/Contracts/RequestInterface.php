@@ -1,6 +1,6 @@
 <?php
 
-namespace Nacho\Helpers;
+namespace Nacho\Contracts;
 
 interface RequestInterface
 {

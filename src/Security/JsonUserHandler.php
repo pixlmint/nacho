@@ -2,6 +2,7 @@
 
 namespace Nacho\Security;
 
+use Nacho\Contracts\UserHandlerInterface;
 
 class JsonUserHandler implements UserHandlerInterface
 {
