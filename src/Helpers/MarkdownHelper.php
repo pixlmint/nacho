@@ -83,11 +83,11 @@ class MarkdownHelper
 
     public function renderPage(PicoPage $page): string
     {
-        if (!isset($page['raw_content'])) {
+        if (!isset($page->raw_content)) {
             return '';
         }
 
-        $content = $this->prepareFileContent($page['raw_content']);
+        $content = $this->prepareFileContent($page->raw_content);
         $page->content = $this->mdParser->parse($content);
 
         return $page->content;
