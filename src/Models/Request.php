@@ -10,6 +10,7 @@ class Request implements RequestInterface
     public string $requestMethod;
     public ?string $contentType;
     public array $headers;
+    public array $body = [];
     protected Route $route;
 
     function __construct(Route $route)
@@ -25,6 +26,7 @@ class Request implements RequestInterface
         }
         $this->requestMethod = ServerVarsParser::getRequestMethod();
         $this->contentType = ServerVarsParser::getContentType();
+        $this->body = [];
         $this->headers = ServerVarsParser::parseHeaders();
     }
 
@@ -44,6 +46,9 @@ class Request implements RequestInterface
 
     public function getBody(): array
     {
+        if ($this->body) {
+            return $this->body;
+        }
         $unsafe = [];
         if ($this->requestMethod === HttpMethod::GET) {
             return [];
@@ -57,8 +62,9 @@ class Request implements RequestInterface
             $requestContent = file_get_contents("php://input");
             parse_str($requestContent, $unsafe);
         }
+        $this->body = $this->filterArrayDeep($unsafe);
 
-        return $this->filterArrayDeep($unsafe);
+        return $this->body;
     }
 
     public function getRoute(): Route
