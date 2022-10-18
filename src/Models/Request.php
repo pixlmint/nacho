@@ -8,7 +8,7 @@ use Nacho\Helpers\ServerVarsParser;
 class Request implements RequestInterface
 {
     public string $requestMethod;
-    public string $contentType;
+    public ?string $contentType;
     public array $headers;
     protected Route $route;
 
