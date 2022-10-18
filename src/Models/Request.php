@@ -73,7 +73,7 @@ class Request implements RequestInterface
                 $arr[$key] = $this->filterArrayDeep($value);
             } else {
                 $arr[$key] = filter_var($value, FILTER_SANITIZE_STRING);
-                $arr[$key] = str_replace($arr[$key], '&#34;', "'");
+                $arr[$key] = str_replace('&#34;', "'", $arr[$key]);
             }
         }
         return $arr;
