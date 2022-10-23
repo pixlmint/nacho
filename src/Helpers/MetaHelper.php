@@ -91,17 +91,26 @@ class MetaHelper
         return $this->yamlParser;
     }
 
-    protected static function implode_recursive(array $arr, string $separator = ''): string
+    protected static function implode_recursive(array $arr, string $separator = '', int $depth = 0): string
     {
         $ret = '';
         foreach ($arr as $key => $value) {
             if (is_array($value)) {
-                $ret .= $separator . $key . ': ' . self::implode_recursive($value, $separator);
+                $ret .= $separator . self::printDepth($depth) . $key . ': ' . self::implode_recursive($value, $separator, $depth + 1);
             } else {
-                $ret .= $separator . $key . ': ' . $value;
+                $ret .= $separator . self::printDepth($depth) . $key . ': ' . $value;
             }
         }
 
+        return $ret;
+    }
+
+    protected static function printDepth(int $depth): string
+    {
+        $ret = '';
+        for ($i = 0; $i < $depth; $i++) {
+            $ret .= '  ';
+        }
         return $ret;
     }
 }
