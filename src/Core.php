@@ -2,9 +2,9 @@
 
 namespace Nacho;
 
-use Nacho\Contracts\Hooks\AnchorConfigurationInterface;
 use Nacho\Contracts\SingletonInterface;
 use Nacho\Helpers\ConfigurationHelper;
+use Nacho\Helpers\HookHandler;
 use Nacho\Models\Request;
 use Nacho\Security\JsonUserHandler;
 use Nacho\Nacho;
@@ -18,26 +18,14 @@ class Core implements SingletonInterface
     const POST_CALL_ACTION = 'post_call_action';
     const PRE_PRINT_RESPONSE = 'pre_print_response';
 
-    private array $anchors;
     private ?Nacho $nacho = null;
 
     private static ?SingletonInterface $instance = null;
 
-    public function __construct()
-    {
-        $this->registerAnchor(PreFindRouteAnchor::getName(), new PreFindRouteAnchor());
-        $this->registerAnchor(PostFindRouteAnchor::getName(), new PostFindRouteAnchor());
-        // $this->anchors = [
-        //     self::PRE_CALL_ACTION => [],
-        //     self::POST_CALL_ACTION => [],
-        //     self::PRE_PRINT_RESPONSE => [],
-        // ];
-    }
-
     /**
-     * @return SingletonInterface|Core
+     * @return SingletonInterface|Core|null
      */
-    public static function getInstance()
+    public static function getInstance(): SingletonInterface|Core|null
     {
         if (!self::$instance) {
             self::$instance = new Core();
@@ -51,11 +39,13 @@ class Core implements SingletonInterface
         $this->loadConfig();
         $path = $this->getPath();
 
-        $routes = $this->executeHook(PreFindRouteAnchor::getName(), ['routes' => RouteFinder::getInstance()->getRoutes(), 'path' => $path]);
+        $hookHandler = HookHandler::getInstance();
+
+        $routes = $hookHandler->executeHook(PreFindRouteAnchor::getName(), ['routes' => RouteFinder::getInstance()->getRoutes(), 'path' => $path]);
         RouteFinder::getInstance()->setRoutes($routes);
 
         $route = RouteFinder::getInstance()->getRoute($path);
-        $route = $this->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
+        $route = $hookHandler->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
         Request::getInstance()->setRoute($route);
 
         $content = $this->getContent();
@@ -63,43 +53,19 @@ class Core implements SingletonInterface
         $this->printContent($content);
     }
 
-    public function executeHook(string $anchorName, array $arguments): mixed
-    {
-        return $this->anchors[$anchorName]->run($arguments);
-    }
-
     private function loadConfig()
     {
         $config = ConfigurationHelper::getInstance();
-        $this->registerConfigHooks($config->getHooks());
-    }
-
-    private function registerConfigHooks(array $hooks)
-    {
-        foreach ($hooks as $hook) {
-            $this->registerHook($hook['anchor'], $hook['hook']);
-        }
-    }
-
-    public function registerHook(string $anchor, string $hook): void
-    {
-        $this->anchors[$anchor]->addHook($hook);
-    }
-
-    public function registerAnchor(string $name, AnchorConfigurationInterface $anchor)
-    {
-        $this->anchors[$name] = $anchor;
+        HookHandler::getInstance()->registerConfigHooks($config->getHooks());
     }
 
     private function printContent(?string $content)
     {
-        if ($content) {
-            echo $content;
-        } else {
+        if (!$content) {
             $route = RouteFinder::getInstance()->getRoute('/');
             $content = $this->getContent($route);
-            echo $content;
         }
+        echo $content;
     }
 
     private function getContent(): string
@@ -124,11 +90,7 @@ class Core implements SingletonInterface
 
     private function getPath(): string
     {
-        if (isset($_SERVER['REDIRECT_URL'])) {
-            $path = $_SERVER['REDIRECT_URL'];
-        } else {
-            $path = $_SERVER['REQUEST_URI'];
-        }
+        $path = $_SERVER['REDIRECT_URL'] ?? $_SERVER['REQUEST_URI'];
 
         if (substr($path, - (strlen($path) === $path)) && $path !== '/') {
             $path = substr($path, 0, strlen($path) - 1);
