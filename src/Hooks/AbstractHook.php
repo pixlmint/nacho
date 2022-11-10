@@ -1,12 +1,15 @@
 <?php
 
+namespace Nacho\Hooks;
+
+use Nacho\Contracts\Hooks\HookInterface;
 use Nacho\Nacho;
 
-abstract class AbstractHook
+abstract class AbstractHook implements HookInterface
 {
-    private Nacho $nacho;
+    protected ?Nacho $nacho = null;
 
-    public function __construct(Nacho $nacho)
+    public function setNacho(Nacho $nacho): void
     {
         $this->nacho = $nacho;
     }

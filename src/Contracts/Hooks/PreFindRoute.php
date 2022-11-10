@@ -2,7 +2,7 @@
 
 namespace Nacho\Contracts\Hooks;
 
-interface PreFindroute
+interface PreFindRoute
 {
     public function call(array $routes, string $requestUrl): array;
 }

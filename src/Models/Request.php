@@ -2,21 +2,49 @@
 
 namespace Nacho\Models;
 
+use Exception;
 use Nacho\Contracts\RequestInterface;
+use Nacho\Contracts\SingletonInterface;
 use Nacho\Helpers\ServerVarsParser;
 
-class Request implements RequestInterface
+class Request implements RequestInterface, SingletonInterface
 {
     public string $requestMethod;
     public ?string $contentType;
     public array $headers;
     public array $body = [];
-    protected Route $route;
+    protected ?Route $route = null;
+    private static ?SingletonInterface $instance = null;
 
-    function __construct(Route $route)
+    function __construct()
     {
         $this->bootstrapSelf();
+    }
+
+    /**
+     * @return SingletonInterface|RequestInterface|Request
+     */
+    public static function getInstance()
+    {
+        if (!self::$instance) {
+            self::$instance = new Request();
+        }
+
+        return self::$instance;
+    }
+
+    public function setRoute(Route $route): void
+    {
         $this->route = $route;
+    }
+
+    public function getRoute(): Route
+    {
+        if (!$this->route) {
+            throw new Exception('Route has not yet been defined');
+        }
+
+        return $this->route;
     }
 
     private function bootstrapSelf()
@@ -65,11 +93,6 @@ class Request implements RequestInterface
         $this->body = $this->filterArrayDeep($unsafe);
 
         return $this->body;
-    }
-
-    public function getRoute(): Route
-    {
-        return $this->route;
     }
 
     private function filterArrayDeep(array $arr): array

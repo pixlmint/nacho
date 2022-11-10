@@ -165,7 +165,7 @@ class MarkdownHelper
                 continue;
             }
 
-            if (endswith($id, '/index')) {
+            if (str_ends_with($id, '/index')) {
                 $id = substr($id, 0, -6);
             }
             if (!$id) {

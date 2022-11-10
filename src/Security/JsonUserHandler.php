@@ -6,11 +6,14 @@ use Nacho\Contracts\UserHandlerInterface;
 
 class JsonUserHandler implements UserHandlerInterface
 {
+    private string $usersFile;
+
     public function __construct()
     {
-         if (!isset($_SESSION['user'])) {
-             $_SESSION['user'] = ['username' => 'Guest', 'password' => null, 'role' => 'Guest'];
-         }
+        $this->usersFile = $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . 'users.json';
+        if (!isset($_SESSION['user'])) {
+            $_SESSION['user'] = ['username' => 'Guest', 'password' => null, 'role' => 'Guest'];
+        }
     }
 
     public function getCurrentUser()
@@ -20,7 +23,7 @@ class JsonUserHandler implements UserHandlerInterface
 
     public function getUsers()
     {
-        return json_decode(file_get_contents(FILE_PATH), true);
+        return json_decode(file_get_contents($this->usersFile), true);
     }
 
     public function changePassword(string $username, string $oldPassword, string $newPassword)
@@ -97,6 +100,6 @@ class JsonUserHandler implements UserHandlerInterface
                 break;
             }
         }
-        file_put_contents(FILE_PATH, json_encode($json));
+        file_put_contents($this->usersFile, json_encode($json));
     }
 }
