@@ -3,8 +3,8 @@
 namespace Nacho;
 
 use Nacho\Contracts\Hooks\AnchorConfigurationInterface;
-use Nacho\Contracts\Hooks\HookInterface;
 use Nacho\Contracts\SingletonInterface;
+use Nacho\Helpers\ConfigurationHelper;
 use Nacho\Models\Request;
 use Nacho\Security\JsonUserHandler;
 use Nacho\Nacho;
@@ -48,9 +48,9 @@ class Core implements SingletonInterface
 
     public function run()
     {
+        $this->loadConfig();
         $path = $this->getPath();
 
-        $routes = RouteFinder::getInstance()->getRoutes();
         $routes = $this->executeHook(PreFindRouteAnchor::getName(), ['routes' => RouteFinder::getInstance()->getRoutes(), 'path' => $path]);
         RouteFinder::getInstance()->setRoutes($routes);
 
@@ -58,19 +58,27 @@ class Core implements SingletonInterface
         $route = $this->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
         Request::getInstance()->setRoute($route);
 
-        $content = $this->getContent($route);
+        $content = $this->getContent();
 
         $this->printContent($content);
-    }
-
-    public function newHook(string $name)
-    {
-        $this->hooks[$name] = [];
     }
 
     public function executeHook(string $anchorName, array $arguments): mixed
     {
         return $this->anchors[$anchorName]->run($arguments);
+    }
+
+    private function loadConfig()
+    {
+        $config = ConfigurationHelper::getInstance();
+        $this->registerConfigHooks($config->getHooks());
+    }
+
+    private function registerConfigHooks(array $hooks)
+    {
+        foreach ($hooks as $hook) {
+            $this->registerHook($hook['anchor'], $hook['hook']);
+        }
     }
 
     public function registerHook(string $anchor, string $hook): void

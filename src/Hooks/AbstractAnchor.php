@@ -27,12 +27,17 @@ abstract class AbstractAnchor
         }
     }
 
+    public function hasHooks(): bool
+    {
+        return count($this->arguments) > 0;
+    }
+
     public function exec(mixed $hook): void
     {
         throw new Exception('This anchor does\'t have it\'s exec function defined');
     }
 
-    private function populateArguments(array $args)
+    private function populateArguments(array $args): void
     {
         foreach ($this->arguments as $i => $argument) {
             if (key_exists($argument->getName(), $args)) {

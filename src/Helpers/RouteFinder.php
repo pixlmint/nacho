@@ -12,7 +12,7 @@ class RouteFinder implements SingletonInterface
 
     public function __construct()
     {
-        $this->routes = json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/config/routes.json'), true);
+        $this->routes = ConfigurationHelper::getInstance()->getRoutes();
     }
 
     /**
