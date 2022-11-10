@@ -3,30 +3,30 @@
 namespace Nacho\Hooks\NachoAnchors;
 
 use Nacho\Contracts\Hooks\AnchorConfigurationInterface;
-use Nacho\Contracts\Hooks\PostFindRoute;
+use Nacho\Contracts\Hooks\PostCallFunction;
 use Nacho\Hooks\AbstractAnchor;
 use Nacho\Hooks\HookArgument;
 
-class PostFindRouteAnchor extends AbstractAnchor implements AnchorConfigurationInterface
+class PostCallActionAnchor extends AbstractAnchor implements AnchorConfigurationInterface
 {
     public function __construct()
     {
-        $this->arguments[] = new HookArgument('route', true);
+        $this->arguments[] = new HookArgument('returnedResponse', true);
     }
 
     public static function getName(): string
     {
-        return 'post_find_route';
+        return 'post_call_action';
     }
 
     public static function getInterface(): string
     {
-        return PostFindRoute::class;
+        return PostCallFunction::class;
     }
 
     public function exec(mixed $hook): void
     {
-        if (!$hook instanceof PostFindRoute) {
+        if (!$hook instanceof PostCallFunction) {
             throw new \Exception('This is not a valid PostFindRoute Hook');
         }
 

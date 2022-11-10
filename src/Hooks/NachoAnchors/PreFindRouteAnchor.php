@@ -12,8 +12,8 @@ class PreFindRouteAnchor extends AbstractAnchor implements AnchorConfigurationIn
 {
     public function __construct()
     {
-        $this->arguments[] = new HookArgument('routes', [], true);
-        $this->arguments[] = new HookArgument('path', '');
+        $this->arguments[] = new HookArgument('routes', true);
+        $this->arguments[] = new HookArgument('path');
     }
 
     public static function getInterface(): string

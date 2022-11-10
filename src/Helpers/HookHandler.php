@@ -4,25 +4,12 @@ namespace Nacho\Helpers;
 
 use Nacho\Contracts\Hooks\AnchorConfigurationInterface;
 use Nacho\Contracts\SingletonInterface;
-use Nacho\Hooks\NachoAnchors\PostFindRouteAnchor;
-use Nacho\Hooks\NachoAnchors\PreFindRouteAnchor;
 
 class HookHandler implements SingletonInterface
 {
     private array $anchors;
 
     private static ?SingletonInterface $instance = null;
-
-    public function __construct()
-    {
-        $this->registerAnchor(PreFindRouteAnchor::getName(), new PreFindRouteAnchor());
-        $this->registerAnchor(PostFindRouteAnchor::getName(), new PostFindRouteAnchor());
-        // $this->anchors = [
-        //     self::PRE_CALL_ACTION => [],
-        //     self::POST_CALL_ACTION => [],
-        //     self::PRE_PRINT_RESPONSE => [],
-        // ];
-    }
 
     public static function getInstance(): SingletonInterface|HookHandler|null
     {

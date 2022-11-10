@@ -5,6 +5,9 @@ namespace Nacho;
 use Nacho\Contracts\SingletonInterface;
 use Nacho\Helpers\ConfigurationHelper;
 use Nacho\Helpers\HookHandler;
+use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
+use Nacho\Hooks\NachoAnchors\PreCallActionAnchor;
+use Nacho\Hooks\NachoAnchors\PrePrintResponseAnchor;
 use Nacho\Models\Request;
 use Nacho\Security\JsonUserHandler;
 use Nacho\Nacho;
@@ -14,13 +17,19 @@ use Nacho\Hooks\NachoAnchors\PreFindRouteAnchor;
 
 class Core implements SingletonInterface
 {
-    const PRE_CALL_ACTION = 'pre_call_action';
-    const POST_CALL_ACTION = 'post_call_action';
-    const PRE_PRINT_RESPONSE = 'pre_print_response';
-
     private ?Nacho $nacho = null;
 
     private static ?SingletonInterface $instance = null;
+
+    public function __construct()
+    {
+        $hookHandler = HookHandler::getInstance();
+        $hookHandler->registerAnchor(PreFindRouteAnchor::getName(), new PreFindRouteAnchor());
+        $hookHandler->registerAnchor(PostFindRouteAnchor::getName(), new PostFindRouteAnchor());
+        $hookHandler->registerAnchor(PreCallActionAnchor::getName(), new PreCallActionAnchor());
+        $hookHandler->registerAnchor(PostCallActionAnchor::getName(), new PostCallActionAnchor());
+        $hookHandler->registerAnchor(PrePrintResponseAnchor::getName(), new PrePrintResponseAnchor());
+    }
 
     /**
      * @return SingletonInterface|Core|null
@@ -48,8 +57,11 @@ class Core implements SingletonInterface
         $route = $hookHandler->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
         Request::getInstance()->setRoute($route);
 
+        $hookHandler->executeHook(PreCallActionAnchor::getName(), []);
         $content = $this->getContent();
+        $content = $hookHandler->executeHook(PostCallActionAnchor::getName(), ['returnedResponse' => $content]);
 
+        $content = $hookHandler->executeHook(PrePrintResponseAnchor::getName(), ['response' => $content]);
         $this->printContent($content);
     }
 

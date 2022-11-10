@@ -8,10 +8,9 @@ class HookArgument
     private mixed $value;
     private bool $isRet;
 
-    public function __construct(string $name, mixed $value, bool $isRet = false)
+    public function __construct(string $name, bool $isRet = false)
     {
         $this->name = $name;
-        $this->value = $value;
         $this->isRet = $isRet;
     }
 
