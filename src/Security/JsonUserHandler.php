@@ -3,14 +3,12 @@
 namespace Nacho\Security;
 
 use Nacho\Contracts\UserHandlerInterface;
+use Nacho\Helpers\DataHandler;
 
 class JsonUserHandler implements UserHandlerInterface
 {
-    private string $usersFile;
-
     public function __construct()
     {
-        $this->usersFile = $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . 'users.json';
         if (!isset($_SESSION['user'])) {
             $_SESSION['user'] = ['username' => 'Guest', 'password' => null, 'role' => 'Guest'];
         }
@@ -23,7 +21,7 @@ class JsonUserHandler implements UserHandlerInterface
 
     public function getUsers()
     {
-        return json_decode(file_get_contents($this->usersFile), true);
+        return DataHandler::getInstance()->readData('users');
     }
 
     public function changePassword(string $username, string $oldPassword, string $newPassword)
@@ -69,12 +67,12 @@ class JsonUserHandler implements UserHandlerInterface
         session_destroy();
     }
 
-    public function getRoles()
+    public function getRoles(): array
     {
         return ['Super Admin', 'Editor', 'Reader', 'Guest'];
     }
 
-    public function isGranted(string $minRight = 'Guest', array $user = null)
+    public function isGranted(string $minRight = 'Guest', array $user = null): bool
     {
         if (!$user) {
             $user = $this->getCurrentUser();
@@ -100,6 +98,6 @@ class JsonUserHandler implements UserHandlerInterface
                 break;
             }
         }
-        file_put_contents($this->usersFile, json_encode($json));
+        DataHandler::getInstance()->writeData('users', $json);
     }
 }

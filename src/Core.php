@@ -4,6 +4,7 @@ namespace Nacho;
 
 use Nacho\Contracts\SingletonInterface;
 use Nacho\Helpers\ConfigurationHelper;
+use Nacho\Helpers\DataHandler;
 use Nacho\Helpers\HookHandler;
 use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PreCallActionAnchor;
@@ -62,6 +63,7 @@ class Core implements SingletonInterface
         $content = $hookHandler->executeHook(PostCallActionAnchor::getName(), ['returnedResponse' => $content]);
 
         $content = $hookHandler->executeHook(PrePrintResponseAnchor::getName(), ['response' => $content]);
+        DataHandler::getInstance()->storeAllData();
         $this->printContent($content);
     }
 

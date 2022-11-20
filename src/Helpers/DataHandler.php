@@ -55,12 +55,12 @@ class DataHandler implements SingletonInterface
             throw new \Exception('The ' . $dt . ' file does not exist');
         }
 
-        return json_decode(file_get_contents(self::getFileName($dt)));
+        return json_decode(file_get_contents(self::getFileName($dt)), true);
     }
 
     protected static function getFileName(string $dt): string
     {
-        return self::getDataDir() . $dt . '.json';
+        return self::getDataDir() . DIRECTORY_SEPARATOR . $dt . '.json';
     }
 
     private function isDataCached(string $dt): bool
