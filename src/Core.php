@@ -106,7 +106,7 @@ class Core implements SingletonInterface
     {
         $path = $_SERVER['REDIRECT_URL'] ?? $_SERVER['REQUEST_URI'];
 
-        if (substr($path, - (strlen($path) === $path)) && $path !== '/') {
+        if (str_ends_with($path, '/')) {
             $path = substr($path, 0, strlen($path) - 1);
         }
 
