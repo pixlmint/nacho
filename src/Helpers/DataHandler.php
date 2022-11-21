@@ -2,6 +2,7 @@
 
 namespace Nacho\Helpers;
 
+use Nacho\Contracts\ArrayableInterface;
 use Nacho\Contracts\SingletonInterface;
 
 class DataHandler implements SingletonInterface
@@ -11,11 +12,11 @@ class DataHandler implements SingletonInterface
 
     public static function getInstance(): ?DataHandler
     {
-         if (!static::$instance) {
-             static::$instance = new DataHandler();
-         }
+        if (!static::$instance) {
+            static::$instance = new DataHandler();
+        }
 
-         return static::$instance;
+        return static::$instance;
     }
 
     public static function getDataDir(): string
@@ -64,7 +65,20 @@ class DataHandler implements SingletonInterface
 
     protected function storeData(string $dt, array $data): void
     {
-         file_put_contents(self::getFileName($dt), json_encode($data));
+        file_put_contents(self::getFileName($dt), json_encode(static::serializeData($data)));
+    }
+
+    protected static function serializeData(array $data): array
+    {
+        return array_map(function ($el) {
+            if ($el instanceof ArrayableInterface) {
+                return $el->toArray();
+            }
+            if (is_array($el)) {
+                return $el;
+            }
+            throw new \Exception("Unable to serialize an element. Please either make it an array or have it implement the ArrayableInterface interface");
+        }, $data);
     }
 
     private function fetchData(string $dt): array
