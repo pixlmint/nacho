@@ -84,7 +84,7 @@ class DataHandler implements SingletonInterface
     private function fetchData(string $dt): array
     {
         if (!is_file(self::getFileName($dt))) {
-            throw new \Exception('The ' . $dt . ' file does not exist');
+            return [];
         }
 
         return json_decode(file_get_contents(self::getFileName($dt)), true);
