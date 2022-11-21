@@ -44,6 +44,24 @@ class DataHandler implements SingletonInterface
         }
     }
 
+    public function removeElement(string $dt, mixed $element): void
+    {
+        $data = $this->readData($dt);
+        if (!in_array($element, $data)) {
+            return;
+        }
+        $index = array_search($element, $data);
+        $removed = array_slice($data, $index, $index + 1);
+        $this->writeData($dt, $data);
+    }
+
+    public function addElement(string $dt, mixed $element): void
+    {
+        $data = $this->readData($dt);
+        $data[] = $element;
+        $this->writeData($dt, $data);
+    }
+
     protected function storeData(string $dt, array $data): void
     {
          file_put_contents(self::getFileName($dt), json_encode($data));
