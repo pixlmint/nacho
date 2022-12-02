@@ -2,6 +2,7 @@
 
 namespace Nacho\Security;
 
+use Nacho\Exceptions\UserDoesNotExistException;
 use Nacho\Helpers\ConfigurationHelper;
 use Nacho\ORM\ModelInterface;
 
@@ -20,7 +21,7 @@ class UserRepository extends \Nacho\ORM\AbstractRepository implements \Nacho\ORM
             }
         }
 
-        throw new \Exception("Unable to find the user with username ${username}");
+        throw new UserDoesNotExistException($username);
     }
 
     protected static function getModel(): string
