@@ -34,10 +34,15 @@ class RepositoryManager implements SingletonInterface
 
     public function close(): void
     {
+        $hasChanges = false;
         foreach ($this->repositories as $repo) {
             if ($repo->isDataChanged()) {
                 $this->dataHandler->writeData($repo::getDataName(), $repo->getData());
+                $hasChanges = true;
             }
+        }
+        if ($hasChanges) {
+            $this->dataHandler->storeAllData();
         }
 
         $this->repositories = [];

@@ -15,6 +15,12 @@ abstract class AbstractRepository
         $this->data = $data;
     }
 
+    public function set(int $id, ModelInterface $newData): void
+    {
+        $this->data[$id] = $newData;
+        $this->dataChanged = true;
+    }
+
     public function initialiseObject(int $id): ModelInterface
     {
         $model = static::getModel();
