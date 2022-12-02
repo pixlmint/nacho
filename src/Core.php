@@ -10,6 +10,7 @@ use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PreCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PrePrintResponseAnchor;
 use Nacho\Models\Request;
+use Nacho\ORM\RepositoryManager;
 use Nacho\Security\JsonUserHandler;
 use Nacho\Nacho;
 use Nacho\Helpers\RouteFinder;
@@ -63,7 +64,7 @@ class Core implements SingletonInterface
         $content = $hookHandler->executeHook(PostCallActionAnchor::getName(), ['returnedResponse' => $content]);
 
         $content = $hookHandler->executeHook(PrePrintResponseAnchor::getName(), ['response' => $content]);
-        DataHandler::getInstance()->storeAllData();
+        RepositoryManager::getInstance()->close();
         $this->printContent($content);
     }
 

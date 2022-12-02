@@ -10,6 +10,7 @@ class ConfigurationHelper implements SingletonInterface
 
     private array $routes = [];
     private array $hooks = [];
+    private array $orm= [];
 
     private static ?SingletonInterface $instance = null;
 
@@ -17,7 +18,8 @@ class ConfigurationHelper implements SingletonInterface
     {
         $this->config = include_once($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
         $this->bootstrapRoutes();
-        $this->bootstrapHooks();
+        $this->bootstrapConfig('hooks');
+        $this->bootstrapConfig('orm');
     }
 
     private function bootstrapRoutes()
@@ -25,10 +27,10 @@ class ConfigurationHelper implements SingletonInterface
         $this->routes = $this->config['routes'];
     }
 
-    private function bootstrapHooks()
+    private function bootstrapConfig(string $configName)
     {
-        if (key_exists('hooks', $this->config)) {
-            $this->hooks = $this->config['hooks'];
+        if (key_exists($configName, $this->config)) {
+            $this->$configName = $this->config[$configName];
         }
     }
 
@@ -52,5 +54,10 @@ class ConfigurationHelper implements SingletonInterface
     public function getRoutes(): array
     {
         return $this->routes;
+    }
+
+    public function getOrm(): array
+    {
+        return $this->orm;
     }
 }

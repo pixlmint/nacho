@@ -5,19 +5,10 @@ namespace Nacho\Helpers;
 use Nacho\Contracts\ArrayableInterface;
 use Nacho\Contracts\SingletonInterface;
 
-class DataHandler implements SingletonInterface
+// TODO: store if data has been changed and only write to those files where data was changed
+class DataHandler
 {
-    protected static ?DataHandler $instance = null;
     private array $data = [];
-
-    public static function getInstance(): ?DataHandler
-    {
-        if (!static::$instance) {
-            static::$instance = new DataHandler();
-        }
-
-        return static::$instance;
-    }
 
     public static function getDataDir(): string
     {

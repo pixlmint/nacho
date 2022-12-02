@@ -4,6 +4,7 @@ namespace Nacho\Security;
 
 use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Helpers\DataHandler;
+use Nacho\ORM\RepositoryManager;
 
 class JsonUserHandler implements UserHandlerInterface
 {
@@ -21,7 +22,7 @@ class JsonUserHandler implements UserHandlerInterface
 
     public function getUsers()
     {
-        return DataHandler::getInstance()->readData('users');
+        return RepositoryManager::getInstance()->getRepository(UserRepository::class)->getData();
     }
 
     public function changePassword(string $username, string $oldPassword, string $newPassword)
