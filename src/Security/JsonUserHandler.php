@@ -4,6 +4,8 @@ namespace Nacho\Security;
 
 use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Helpers\DataHandler;
+use Nacho\ORM\ModelInterface;
+use Nacho\ORM\RepositoryInterface;
 use Nacho\ORM\RepositoryManager;
 
 class JsonUserHandler implements UserHandlerInterface
@@ -27,7 +29,6 @@ class JsonUserHandler implements UserHandlerInterface
 
     public function changePassword(string $username, string $oldPassword, string $newPassword)
     {
-        $user = $this->findUser($username);
         if (!$this->passwordVerify($username, $oldPassword)) {
             throw new \Exception('The Passwords don\'t match');
         }
@@ -54,13 +55,7 @@ class JsonUserHandler implements UserHandlerInterface
 
     public function findUser($username)
     {
-        foreach ($this->getUsers() as $user) {
-            if ($username === $user['username']) {
-                return $user;
-            }
-        }
-
-        return false;
+        return self::getUserRepository()->getByUsername($username);
     }
 
     public function logout()
@@ -73,13 +68,13 @@ class JsonUserHandler implements UserHandlerInterface
         return ['Super Admin', 'Editor', 'Reader', 'Guest'];
     }
 
-    public function isGranted(string $minRight = 'Guest', array $user = null): bool
+    public function isGranted(string $minRight = 'Guest', ?UserInterface $user = null): bool
     {
         if (!$user) {
             $user = $this->getCurrentUser();
         }
 
-        return array_search($user['role'], $this->getRoles()) <= array_search($minRight, $this->getRoles());
+        return array_search($user->getRole(), $this->getRoles()) <= array_search($minRight, $this->getRoles());
     }
 
     public function modifyUser(string $username, string $newKey, $newVar)
@@ -92,13 +87,15 @@ class JsonUserHandler implements UserHandlerInterface
 
     private function changeUser(array $newUser): void
     {
-        $json = $this->getUsers();
-        foreach ($json as $key => $user) {
-            if ($user['username'] === $newUser['username']) {
-                $json[$key] = $newUser;
-                break;
-            }
-        }
-        DataHandler::getInstance()->writeData('users', $json);
+        /** @var ModelInterface|User $oldUser */
+        $oldUser = self::getUserRepository()->getByUsername($newUser['username']);
+        $obj = User::init($newUser, $oldUser->getId());
+
+        self::getUserRepository()->set($obj);
+    }
+
+    private static function getUserRepository(): UserRepository|RepositoryInterface
+    {
+        return RepositoryManager::getInstance()->getRepository(UserRepository::class);
     }
 }

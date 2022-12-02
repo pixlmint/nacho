@@ -11,6 +11,7 @@ class ConfigurationHelper implements SingletonInterface
     private array $routes = [];
     private array $hooks = [];
     private array $orm= [];
+    private array $security = [];
 
     private static ?SingletonInterface $instance = null;
 
@@ -20,6 +21,7 @@ class ConfigurationHelper implements SingletonInterface
         $this->bootstrapRoutes();
         $this->bootstrapConfig('hooks');
         $this->bootstrapConfig('orm');
+        $this->bootstrapConfig('security');
     }
 
     private function bootstrapRoutes()
@@ -54,6 +56,11 @@ class ConfigurationHelper implements SingletonInterface
     public function getRoutes(): array
     {
         return $this->routes;
+    }
+
+    public function getSecurity(): array
+    {
+        return $this->security;
     }
 
     public function getOrm(): array

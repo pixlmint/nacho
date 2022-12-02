@@ -4,6 +4,8 @@
 namespace Nacho\Contracts;
 
 
+use Nacho\Security\UserInterface;
+
 interface UserHandlerInterface
 {
     public function getCurrentUser();
@@ -20,7 +22,7 @@ interface UserHandlerInterface
 
     public function passwordVerify(string $username, string $password);
 
-    public function isGranted(string $minRight = 'Guest', ?array $user = null);
+    public function isGranted(string $minRight = 'Guest', ?UserInterface $user = null);
 
     public function modifyUser(string $username, string $key, $newVar);
 }

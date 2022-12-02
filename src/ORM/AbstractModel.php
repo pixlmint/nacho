@@ -6,7 +6,19 @@ use Nacho\Contracts\ArrayableInterface;
 
 abstract class AbstractModel implements ArrayableInterface
 {
-    public static function init(array $data): ModelInterface
+    protected int $id = -1;
+
+    public function setId(int $id)
+    {
+        $this->id = $id;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public static function init(array $data, int $id): ModelInterface
     {
         $keys = array_keys(get_class_vars(static::class));
         $str = static::class;
@@ -16,6 +28,7 @@ abstract class AbstractModel implements ArrayableInterface
                 throw new \Exception("Key ${key} does not exist in " . json_encode($data));
             }
             $obj->$key = $data[$key];
+            $obj->setId($id);
         }
 
         return $obj;
@@ -25,6 +38,10 @@ abstract class AbstractModel implements ArrayableInterface
     {
         $ret = [];
         foreach (get_object_vars($this) as $key => $var) {
+            print($key);
+            if ($key === 'id') {
+                continue;
+            }
             if (is_object($var)) {
                 if (($var instanceof ArrayableInterface) || ($var instanceof ModelInterface)) {
                     $ret[$key] = $var->toArray();
