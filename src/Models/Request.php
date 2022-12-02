@@ -21,10 +21,7 @@ class Request implements RequestInterface, SingletonInterface
         $this->bootstrapSelf();
     }
 
-    /**
-     * @return SingletonInterface|RequestInterface|Request
-     */
-    public static function getInstance()
+    public static function getInstance(): SingletonInterface|Request
     {
         if (!self::$instance) {
             self::$instance = new Request();
@@ -101,7 +98,7 @@ class Request implements RequestInterface, SingletonInterface
             if (is_array($value)) {
                 $arr[$key] = $this->filterArrayDeep($value);
             } else {
-                $arr[$key] = filter_var($value, FILTER_SANITIZE_STRING);
+                $arr[$key] = htmlspecialchars($value);
                 $arr[$key] = str_replace('&#34;', "'", $arr[$key]);
             }
         }
