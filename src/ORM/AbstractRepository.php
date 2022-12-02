@@ -44,8 +44,11 @@ abstract class AbstractRepository
     }
 
     // Get a specific object by its ID
-    public function getById(int $id): ModelInterface
+    public function getById(int $id): ?ModelInterface
     {
+        if (!key_exists($id, $this->data)) {
+            return null;
+        }
         if (is_array($this->data[$id])) {
             $this->data[$id] = $this->initialiseObject($id);
         }
