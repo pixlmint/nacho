@@ -32,6 +32,11 @@ abstract class AbstractUser extends AbstractModel
         return $this->role;
     }
 
+    public function setRole(string $role): void
+    {
+        $this->role = $role;
+    }
+
     public function getUsername(): string
     {
         return $this->username;
@@ -40,5 +45,10 @@ abstract class AbstractUser extends AbstractModel
     public function getPassword(): string
     {
         return $this->password;
+    }
+
+    public function setPassword(string $password): void
+    {
+        $this->password = $password;
     }
 }

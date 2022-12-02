@@ -3,9 +3,7 @@
 namespace Nacho\Helpers;
 
 use Nacho\Contracts\ArrayableInterface;
-use Nacho\Contracts\SingletonInterface;
 
-// TODO: store if data has been changed and only write to those files where data was changed
 class DataHandler
 {
     private array $data = [];

@@ -41,19 +41,19 @@ class JsonUserHandler implements UserHandlerInterface
     public function passwordVerify(string $username, string $password): bool
     {
         $user = $this->findUser($username);
-        return password_verify($password, $user['password']);
+        return password_verify($password, $user->getPassword());
     }
 
     public function setPassword(string $username, string $newPassword)
     {
         $user = $this->findUser($username);
-        $user['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
-        $this->changeUser($user);
+        $user->setPassword(password_hash($newPassword, PASSWORD_DEFAULT));
+        self::getUserRepository()->set($user);
 
         return $user;
     }
 
-    public function findUser($username)
+    public function findUser($username): ModelInterface|UserInterface
     {
         return self::getUserRepository()->getByUsername($username);
     }
@@ -75,23 +75,6 @@ class JsonUserHandler implements UserHandlerInterface
         }
 
         return array_search($user->getRole(), $this->getRoles()) <= array_search($minRight, $this->getRoles());
-    }
-
-    public function modifyUser(string $username, string $newKey, $newVar)
-    {
-        $user = $this->findUser($username);
-        $user[$newKey] = $newVar;
-        $this->changeUser($user);
-        return $user;
-    }
-
-    private function changeUser(array $newUser): void
-    {
-        /** @var ModelInterface|User $oldUser */
-        $oldUser = self::getUserRepository()->getByUsername($newUser['username']);
-        $obj = User::init($newUser, $oldUser->getId());
-
-        self::getUserRepository()->set($obj);
     }
 
     private static function getUserRepository(): UserRepository|RepositoryInterface

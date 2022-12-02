@@ -23,6 +23,4 @@ interface UserHandlerInterface
     public function passwordVerify(string $username, string $password);
 
     public function isGranted(string $minRight = 'Guest', ?UserInterface $user = null);
-
-    public function modifyUser(string $username, string $key, $newVar);
 }
