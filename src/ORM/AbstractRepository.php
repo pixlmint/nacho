@@ -17,7 +17,12 @@ abstract class AbstractRepository
 
     public function set(ModelInterface $newData): void
     {
-        $this->data[$newData->getId()] = $newData;
+        $id = $newData->getId();
+        if ($id < 0 || $id === null || !$id) {
+            $this->data[] = $newData;
+        } else {
+            $this->data[$newData->getId()] = $newData;
+        }
         $this->dataChanged = true;
     }
 
