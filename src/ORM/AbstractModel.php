@@ -18,16 +18,13 @@ abstract class AbstractModel implements ArrayableInterface
         return $this->id;
     }
 
-    public static function init(array $data, int $id): ModelInterface
+    public static function init(TemporaryModel $data, int $id): ModelInterface
     {
         $keys = array_keys(get_class_vars(static::class));
         $str = static::class;
         $obj = new $str();
         foreach ($keys as $key) {
-            if (!key_exists($key, $data)) {
-                throw new \Exception("Key ${key} does not exist in " . json_encode($data));
-            }
-            $obj->$key = $data[$key];
+            $obj->$key = $data->get($key);
             $obj->setId($id);
         }
 

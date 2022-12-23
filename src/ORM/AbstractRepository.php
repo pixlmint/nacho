@@ -29,7 +29,7 @@ abstract class AbstractRepository
     public function initialiseObject(int $id): ModelInterface
     {
         $model = static::getModel();
-        $obj = $model::init($this->data[$id], $id);
+        $obj = $model::init(new TemporaryModel($this->data[$id]), $id);
         return $obj;
     }
 
