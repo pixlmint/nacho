@@ -3,6 +3,7 @@
 namespace Nacho;
 
 use Nacho\Contracts\SingletonInterface;
+use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Helpers\ConfigurationHelper;
 use Nacho\Helpers\DataHandler;
 use Nacho\Helpers\HookHandler;
@@ -86,7 +87,7 @@ class Core implements SingletonInterface
     private function getContent(): string
     {
         $route = Request::getInstance()->getRoute();
-        $userHandler = new JsonUserHandler();
+        $userHandler = static::getUserHandler();
         $this->nacho = new Nacho(Request::getInstance(), $userHandler);
         if (!$this->nacho->isGranted($route->getMinRole())) {
             header('Http/1.1 401');
@@ -101,6 +102,19 @@ class Core implements SingletonInterface
         }
 
         return $cnt->$function(Request::getInstance());
+    }
+
+    private static function getUserHandler(): UserHandlerInterface
+    {
+        $securityConfig = ConfigurationHelper::getInstance()->getSecurity();
+        if (key_exists('userHandler', $securityConfig)) {
+            $userHandlerStr = $securityConfig['userHandler'];
+            $userHandler = new $userHandlerStr();
+        } else {
+            $userHandler = new JsonUserHandler();
+        }
+
+        return $userHandler;
     }
 
     private function getPath(): string
