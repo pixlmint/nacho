@@ -25,4 +25,18 @@ class TemporaryModel
 
         return $this->data[$key];
     }
+
+    public function asArray(): array
+    {
+        $ret = [];
+        foreach ($this->data as $key => $value) {
+            if ($value instanceof TemporaryModel) {
+                $ret[$key] = $value->asArray();
+            } else {
+                $ret[$key] = $value;
+            }
+        }
+
+        return $ret;
+    }
 }
