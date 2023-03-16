@@ -16,8 +16,11 @@ class UserRepository extends \Nacho\ORM\AbstractRepository implements \Nacho\ORM
     public function getByUsername(string $username): ModelInterface
     {
         foreach ($this->getData() as $id => $user) {
-            if ($user['username'] === $username) {
+            if (is_array($user) && $user['username'] === $username) {
                 return $this->initialiseObject($id);
+            }
+            if ($user instanceof UserInterface && $user->getUsername() === $username) {
+                return $user;
             }
         }
 
