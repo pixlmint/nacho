@@ -20,7 +20,7 @@ interface UserHandlerInterface
 
     public function logout();
 
-    public function passwordVerify(string $username, string $password);
+    public function passwordVerify(UserInterface $user, string $password);
 
     public function isGranted(string $minRight = 'Guest', ?UserInterface $user = null);
 }

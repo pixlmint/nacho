@@ -38,9 +38,8 @@ class JsonUserHandler implements UserHandlerInterface
         return true;
     }
 
-    public function passwordVerify(string $username, string $password): bool
+    public function passwordVerify(UserInterface $user, string $password): bool
     {
-        $user = $this->findUser($username);
         return password_verify($password, $user->getPassword());
     }
 
