@@ -3,6 +3,7 @@
 namespace Nacho\Helpers;
 
 use Nacho\Contracts\SingletonInterface;
+use Nacho\Exceptions\ConfigurationDoesNotExistException;
 
 class ConfigurationHelper implements SingletonInterface
 {
@@ -18,18 +19,12 @@ class ConfigurationHelper implements SingletonInterface
     public function __construct()
     {
         $this->config = include_once($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
-        $this->bootstrapRoutes();
-        $this->bootstrapConfig('hooks');
-        $this->bootstrapConfig('orm');
-        $this->bootstrapConfig('security');
+        foreach ($this->config as $name => $conf) {
+            $this->bootstrapConfig($name);
+        }
     }
 
-    private function bootstrapRoutes()
-    {
-        $this->routes = $this->config['routes'];
-    }
-
-    private function bootstrapConfig(string $configName)
+    public function bootstrapConfig(string $configName)
     {
         if (key_exists($configName, $this->config)) {
             $this->$configName = $this->config[$configName];
@@ -66,5 +61,14 @@ class ConfigurationHelper implements SingletonInterface
     public function getOrm(): array
     {
         return $this->orm;
+    }
+
+    public function getCustomConfig(string $configName): array
+    {
+        if (!isset($this->$configName)) {
+            throw new ConfigurationDoesNotExistException($configName);
+        }
+
+        return $this->$configName;
     }
 }
