@@ -4,6 +4,7 @@ namespace Nacho;
 
 use Nacho\Contracts\RequestInterface;
 use Nacho\Contracts\UserHandlerInterface;
+use Nacho\Exceptions\UserDoesNotExistException;
 use Nacho\Helpers\MarkdownHelper;
 use Nacho\Models\PicoPage;
 
@@ -41,7 +42,11 @@ class Nacho
 
     public function isGranted(string $minRight = 'Guest', ?array $user = null)
     {
-        return $this->userHandler->isGranted($minRight, $user);
+        try {
+            return $this->userHandler->isGranted($minRight, $user);
+        } catch (UserDoesNotExistException $e) {
+            return true;
+        }
     }
 
     /**
