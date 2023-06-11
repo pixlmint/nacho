@@ -16,9 +16,13 @@ class ConfigurationHelper implements SingletonInterface
 
     private static ?SingletonInterface $instance = null;
 
-    public function __construct()
+    public function __construct(array $config = [])
     {
-        $this->config = include_once($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+        if ($config) {
+            $this->config = $config;
+        } else {
+            $this->config = include_once($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+        }
         foreach ($this->config as $name => $conf) {
             $this->bootstrapConfig($name);
         }
@@ -34,10 +38,10 @@ class ConfigurationHelper implements SingletonInterface
     /**
      * @return SingletonInterface|ConfigurationHelper
      */
-    public static function getInstance()
+    public static function getInstance(array $config = [])
     {
         if (!self::$instance) {
-            self::$instance = new ConfigurationHelper();
+            self::$instance = new ConfigurationHelper($config);
         }
 
         return self::$instance;

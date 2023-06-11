@@ -5,7 +5,6 @@ namespace Nacho;
 use Nacho\Contracts\SingletonInterface;
 use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Helpers\ConfigurationHelper;
-use Nacho\Helpers\DataHandler;
 use Nacho\Helpers\HookHandler;
 use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PreCallActionAnchor;
@@ -13,7 +12,6 @@ use Nacho\Hooks\NachoAnchors\PrePrintResponseAnchor;
 use Nacho\Models\Request;
 use Nacho\ORM\RepositoryManager;
 use Nacho\Security\JsonUserHandler;
-use Nacho\Nacho;
 use Nacho\Helpers\RouteFinder;
 use Nacho\Hooks\NachoAnchors\PostFindRouteAnchor;
 use Nacho\Hooks\NachoAnchors\PreFindRouteAnchor;
@@ -46,9 +44,9 @@ class Core implements SingletonInterface
         return self::$instance;
     }
 
-    public function run()
+    public function run(array $config = []): void
     {
-        $this->loadConfig();
+        $this->loadConfig($config);
         $path = $this->getPath();
 
         $hookHandler = HookHandler::getInstance();
@@ -69,9 +67,9 @@ class Core implements SingletonInterface
         $this->printContent($content);
     }
 
-    private function loadConfig()
+    private function loadConfig(array $config = []): void
     {
-        $config = ConfigurationHelper::getInstance();
+        $config = ConfigurationHelper::getInstance($config);
         HookHandler::getInstance()->registerConfigHooks($config->getHooks());
     }
 
