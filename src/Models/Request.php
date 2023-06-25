@@ -76,7 +76,7 @@ class Request implements RequestInterface, SingletonInterface
         }
         $unsafe = [];
         if ($this->requestMethod === HttpMethod::GET) {
-            return [];
+            $unsafe = $_GET;
         }
 
         if ($this->requestMethod === HttpMethod::POST) {
