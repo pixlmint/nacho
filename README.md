@@ -4,7 +4,7 @@
 This is my own little PHP Framework, slowly developed as I need functionality in my own projects.
 
 ## Installation
-1. `composer require christiangroeber/nacho`
+1. `composer require pixlmint/nacho`
 2. Copy `public/index.php` to your root directory
 
 ## First Endpoint
