@@ -3,6 +3,7 @@
 namespace Nacho\Security;
 
 use Nacho\Contracts\UserHandlerInterface;
+use Nacho\Exceptions\PasswordInvalidException;
 use Nacho\Helpers\DataHandler;
 use Nacho\ORM\ModelInterface;
 use Nacho\ORM\RepositoryInterface;
@@ -27,10 +28,14 @@ class JsonUserHandler implements UserHandlerInterface
         return RepositoryManager::getInstance()->getRepository(UserRepository::class)->getData();
     }
 
-    public function changePassword(string $username, string $oldPassword, string $newPassword)
+    /**
+     * @throws PasswordInvalidException
+     */
+    public function changePassword(string $username, string $oldPassword, string $newPassword): bool
     {
-        if (!$this->passwordVerify($username, $oldPassword)) {
-            throw new \Exception('The Passwords don\'t match');
+        $user = $this->findUser($username);
+        if (!$this->passwordVerify($user, $oldPassword)) {
+            throw new PasswordInvalidException();
         }
 
         $this->setPassword($username, $newPassword);
@@ -43,7 +48,7 @@ class JsonUserHandler implements UserHandlerInterface
         return password_verify($password, $user->getPassword());
     }
 
-    public function setPassword(string $username, string $newPassword)
+    public function setPassword(string $username, string $newPassword): UserInterface
     {
         $user = $this->findUser($username);
         $user->setPassword(password_hash($newPassword, PASSWORD_DEFAULT));
