@@ -35,7 +35,6 @@ abstract class AbstractModel implements ArrayableInterface
     {
         $ret = [];
         foreach (get_object_vars($this) as $key => $var) {
-            print($key);
             if ($key === 'id') {
                 continue;
             }
