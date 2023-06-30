@@ -5,7 +5,7 @@ namespace Nacho\Helpers;
 use Exception;
 use Nacho\Models\PicoMeta;
 use Nacho\Models\PicoPage;
-use Parsedown;
+use PixlMint\Parsedown\Parsedown;
 use Symfony\Component\Yaml\Exception\ParseException;
 
 class MarkdownHelper
