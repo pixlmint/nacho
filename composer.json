@@ -10,7 +10,7 @@
     "require": {
         "php": "8.*",
         "twig/twig": "^1.36",
-        "erusev/parsedown": "*",
+        "pixlmint/parsedown": "*",
         "symfony/yaml": "^5.2"
     },
     "license": "MIT",
