@@ -85,7 +85,11 @@ class Request implements RequestInterface, SingletonInterface
 
         if (in_array($this->requestMethod, [HttpMethod::PUT, HttpMethod::DELETE])) {
             $requestContent = file_get_contents("php://input");
-            parse_str($requestContent, $unsafe);
+            if ($this->contentType === 'application/json') {
+                $unsafe = json_decode($requestContent, true);
+            } else {
+                parse_str($requestContent, $unsafe);
+            }
         }
         $this->body = $this->filterArrayDeep($unsafe);
 

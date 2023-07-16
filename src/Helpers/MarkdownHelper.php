@@ -3,6 +3,7 @@
 namespace Nacho\Helpers;
 
 use Exception;
+use Nacho\Core;
 use Nacho\Models\PicoMeta;
 use Nacho\Models\PicoPage;
 use PixlMint\Parsedown\Parsedown;
@@ -14,12 +15,14 @@ class MarkdownHelper
     private array $pages;
     private Parsedown $mdParser;
     private MetaHelper $metaHelper;
+    private PageSecurityHelper $pageSecurityHelper;
 
     public function __construct()
     {
         $this->pages = [];
         $this->mdParser = new Parsedown();
         $this->metaHelper = new MetaHelper();
+        $this->pageSecurityHelper = new PageSecurityHelper();
     }
 
     public function clearPages(): void
@@ -33,7 +36,7 @@ class MarkdownHelper
         $fileExtensionLength = strlen('.md');
         $result = [];
 
-        $files = scandir($directory);
+        $files = $this->indexFirst(scandir($directory));
         if ($files !== false) {
             foreach ($files as $file) {
                 // exclude hidden files/dirs starting with a .; this also excludes the special dirs . and ..
@@ -96,9 +99,9 @@ class MarkdownHelper
     /**
      * @param string $rawContent
      *
-     * @return mixed
+     * @return string|array|null
      */
-    public function prepareFileContent(string $rawContent)
+    public function prepareFileContent(string $rawContent): string|array|null
     {
         // remove meta header
         $metaHeaderPattern = "/^(?:\xEF\xBB\xBF)?(\/(\*)|---)[[:blank:]]*(?:\r)?\n"
@@ -106,13 +109,6 @@ class MarkdownHelper
         return preg_replace($metaHeaderPattern, '', $rawContent, 1);
     }
 
-    /**
-     * @param string $url
-     * @param string $newContent
-     * @param array $newMeta
-     * @return void
-     * @throws Exception
-     */
     public function editPage(string $url, string $newContent, array $newMeta): bool
     {
         $page = $this->getPage($url);
@@ -121,6 +117,9 @@ class MarkdownHelper
         }
         $oldMeta = (array)$page->meta;
         $newMeta = array_merge($oldMeta, $newMeta);
+        if (!$newMeta['owner']) {
+            $newMeta['owner'] = Core::getUserHandler()->getCurrentUser()->getUsername();
+        }
         $newPage = $page->duplicate();
         if ($newContent) {
             $newPage->raw_content = $newContent;
@@ -148,7 +147,7 @@ class MarkdownHelper
         return $_SERVER['DOCUMENT_ROOT'] . '/content';
     }
 
-    public function readPages()
+    public function readPages(): void
     {
         $contentDir = self::getContentDir();
 
@@ -159,7 +158,7 @@ class MarkdownHelper
 
             // skip inaccessible pages (e.g. drop "sub.md" if "sub/index.md" exists) by default
             $conflictFile = $contentDir . $id . '/index.md';
-            $skipFile = in_array($conflictFile, $files, true) ?: null;
+            $skipFile = in_array($conflictFile, $files, true) || null;
 
             if ($skipFile) {
                 continue;
@@ -197,8 +196,12 @@ class MarkdownHelper
 
             unset($rawContent, $rawMarkdown, $meta);
 
-            $this->pages[$id] = $page;
+            if ($this->pageSecurityHelper->isPageShowingForCurrentUser($page)) {
+                $this->pages[$id] = $page;
+            }
         }
+
+        // print_r(array_map(function ($page) {return $page->id;}, $this->pages));
     }
 
     protected static function implode_recursive(array $arr, string $separator = ''): string
@@ -218,6 +221,23 @@ class MarkdownHelper
     public static function createMetaString(array $meta): string
     {
         return "---" . self::implode_recursive($meta, "\n") . "\n---\n";
+    }
+
+    private function indexFirst(array $files): array
+    {
+        usort($files, function($a, $b) {
+            if ($a === 'index.md') {
+                return -1;
+            }
+
+            if ($b === 'index.md') {
+                return 1;
+            }
+
+            return strcmp($a, $b);
+        });
+
+        return $files;
     }
 
     protected static function loadFileContent($file)

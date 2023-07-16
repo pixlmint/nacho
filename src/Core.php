@@ -19,6 +19,7 @@ use Nacho\Hooks\NachoAnchors\PreFindRouteAnchor;
 class Core implements SingletonInterface
 {
     private ?Nacho $nacho = null;
+    private static ?UserHandlerInterface $userHandler;
 
     private static ?SingletonInterface $instance = null;
 
@@ -102,7 +103,16 @@ class Core implements SingletonInterface
         return $cnt->$function(Request::getInstance());
     }
 
-    private static function getUserHandler(): UserHandlerInterface
+    public static function getUserHandler(): UserHandlerInterface
+    {
+        if (!isset(static::$userHandler)) {
+            static::$userHandler = static::fetchUserHandler();
+        }
+
+        return static::$userHandler;
+    }
+
+    private static function fetchUserHandler(): UserHandlerInterface
     {
         $securityConfig = ConfigurationHelper::getInstance()->getSecurity();
         if (key_exists('userHandler', $securityConfig)) {

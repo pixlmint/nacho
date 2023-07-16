@@ -26,6 +26,20 @@ class PicoPage
         }
     }
 
+    public function setSecurity(string $security): void
+    {
+        $this->meta->security = $security;
+    }
+
+    public function getSecurity(): ?string
+    {
+        if ($this->meta->security) {
+            return $this->meta->security;
+        }
+
+        return null;
+    }
+
     public function duplicate(): PicoPage
     {
         return new PicoPage((array) $this);
