@@ -19,13 +19,18 @@ class PageSecurityHelper
         $this->userHandler = Core::getUserHandler();
     }
 
+    public static function isPagePublic(PicoPage $page): bool
+    {
+        return !$page->getSecurity() || $page->getSecurity() === PageSecurityStatus::PUBLIC;
+    }
+
     public function isPageShowingForCurrentUser(PicoPage $page): bool
     {
         if ($this->isChildPathOfPrivateFolder($page->id)) {
             return false;
         }
 
-        if (!$page->getSecurity() || $page->getSecurity() === PageSecurityStatus::PUBLIC) {
+        if ($this->isPagePublic($page)) {
             return true;
         }
 
