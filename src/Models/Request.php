@@ -102,8 +102,7 @@ class Request implements RequestInterface, SingletonInterface
             if (is_array($value)) {
                 $arr[$key] = $this->filterArrayDeep($value);
             } else {
-                $arr[$key] = htmlspecialchars($value);
-                $arr[$key] = str_replace('&#34;', "'", $arr[$key]);
+                $arr[$key] = htmlspecialchars($value, ENT_NOQUOTES);
             }
         }
         return $arr;

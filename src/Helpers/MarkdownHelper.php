@@ -93,6 +93,12 @@ class MarkdownHelper
         $content = $this->prepareFileContent($page->raw_content);
         $page->content = $this->mdParser->parse($content);
 
+        $page->raw_content = str_replace('&amp;', '&', $page->raw_content);
+        $page->raw_content = str_replace('&quot;', '"', $page->raw_content);
+        $page->raw_content = str_replace('&#039;', '\'', $page->raw_content);
+        $page->raw_content = str_replace('&lt;', '<', $page->raw_content);
+        $page->raw_content = str_replace('&gt;', '>', $page->raw_content);
+
         return $page->content;
     }
 
@@ -117,6 +123,7 @@ class MarkdownHelper
         }
         $oldMeta = (array)$page->meta;
         $newMeta = array_merge($oldMeta, $newMeta);
+        // Fallback for older entries that don't yet possess the owner info
         if (!$newMeta['owner']) {
             $newMeta['owner'] = Core::getUserHandler()->getCurrentUser()->getUsername();
         }
