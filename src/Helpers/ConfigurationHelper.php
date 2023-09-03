@@ -11,8 +11,9 @@ class ConfigurationHelper implements SingletonInterface
 
     private array $routes = [];
     private array $hooks = [];
-    private array $orm= [];
+    private array $orm = [];
     private array $security = [];
+    private array $alternativeContentHandlers = [];
 
     private static ?SingletonInterface $instance = null;
 
@@ -35,16 +36,18 @@ class ConfigurationHelper implements SingletonInterface
         }
     }
 
-    /**
-     * @return SingletonInterface|ConfigurationHelper
-     */
-    public static function getInstance(array $config = [])
+    public static function getInstance(array $config = []): SingletonInterface|ConfigurationHelper|null
     {
         if (!self::$instance) {
             self::$instance = new ConfigurationHelper($config);
         }
 
         return self::$instance;
+    }
+
+    public function getAlternativeContentHandlers(): array
+    {
+        return $this->alternativeContentHandlers;
     }
 
     public function getHooks(): array

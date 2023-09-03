@@ -5,20 +5,19 @@ namespace Nacho;
 use Nacho\Contracts\RequestInterface;
 use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Exceptions\UserDoesNotExistException;
-use Nacho\Helpers\MarkdownHelper;
-use Nacho\Models\PicoPage;
+use Nacho\Helpers\PageManager;
 
 class Nacho
 {
     protected RequestInterface $request;
-    protected MarkdownHelper $markdownHelper;
+    protected PageManager $pageManager;
     public UserHandlerInterface $userHandler;
 
     public function __construct(RequestInterface $request, UserHandlerInterface $userHandler)
     {
         $this->request = $request;
         $this->userHandler = $userHandler;
-        $this->markdownHelper = new MarkdownHelper();
+        $this->pageManager = PageManager::getInstance();
     }
 
     public function getRequest(): RequestInterface
@@ -31,15 +30,6 @@ class Nacho
         return $this->userHandler;
     }
 
-    /**
-     * @return void
-     * @deprecated Use `$nacho->getMarkdownHelper()->clearPages()` instead
-     */
-    public function clearPages(): void
-    {
-        $this->markdownHelper->clearPages();
-    }
-
     public function isGranted(string $minRight = 'Guest', ?array $user = null)
     {
         try {
@@ -49,27 +39,8 @@ class Nacho
         }
     }
 
-    /**
-     * @return array
-     * @deprecated Use `$nacho->getMarkdownHelper()->getPages()` instead
-     */
-    public function getPages(): array
+    public function getPageManager(): PageManager
     {
-        return $this->markdownHelper->getPages();
-    }
-
-    /**
-     * @param string $url
-     * @return ?PicoPage
-     * @deprecated Use `$nacho->getMarkdownHelper()->getPage($url)` instead
-     */
-    public function getPage(string $url): ?PicoPage
-    {
-        return $this->markdownHelper->getPage($url);
-    }
-
-    public function getMarkdownHelper(): MarkdownHelper
-    {
-        return $this->markdownHelper;
+        return $this->pageManager;
     }
 }

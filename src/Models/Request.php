@@ -69,6 +69,11 @@ class Request implements RequestInterface, SingletonInterface
         return $result;
     }
 
+    public function getFiles(): array
+    {
+        return $_FILES;
+    }
+
     public function getBody(): array
     {
         if ($this->body) {

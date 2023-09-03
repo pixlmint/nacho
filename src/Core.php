@@ -74,7 +74,7 @@ class Core implements SingletonInterface
         HookHandler::getInstance()->registerConfigHooks($config->getHooks());
     }
 
-    private function printContent(?string $content)
+    private function printContent(?string $content): void
     {
         if (!$content) {
             $route = RouteFinder::getInstance()->getRoute('/');

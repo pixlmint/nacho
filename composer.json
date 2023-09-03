@@ -8,6 +8,7 @@
         }
     ],
     "require": {
+        "ext-fileinfo": "*",
         "php": "8.*",
         "twig/twig": "^1.36",
         "pixlmint/parsedown": "*",
