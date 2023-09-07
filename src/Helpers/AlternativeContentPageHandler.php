@@ -37,37 +37,41 @@ class AlternativeContentPageHandler implements PageHandler
 
     public function handleUpdate(string $url, string $newContent, array $newMeta): PicoPage
     {
-        $uploadedFile = $this->getUploadedFileOrThrow();
+        $uploadedFile = $this->getUploadedFile();
 
-        $this->deleteOldFile();
-        $this->storeNewFile($uploadedFile);
+        if ($uploadedFile) {
+            $this->deleteOldFile();
+            $this->storeNewFile($uploadedFile);
+        }
 
         return $this->page;
     }
 
     public function handleDelete(): void
     {
-        // TODO: Implement handleDelete() method.
+        $contentPath = $this->getAbsoluteFilePath();
+        if (is_file($contentPath)) {
+            unlink($contentPath);
+        }
     }
 
     public function renderPage(): string
     {
-        $contentPath = $this->page->meta->parentPath . '/' . $this->page->meta->alternative_content;
-        $pdfContent = file_get_contents(PageManager::getContentDir() . $contentPath);
+        $pdfContent = file_get_contents($this->getAbsoluteFilePath());
 
         return base64_encode($pdfContent);
     }
 
-    private function getUploadedFileOrThrow(): array
+    private function getUploadedFile(): array
     {
         $request = Request::getInstance();
         $uploadedFiles = $request->getFiles();
 
-        if (!isset($uploadedFiles['alternate_content'])) {
-            throw new Exception("No uploaded file with key 'alternate_content' found.");
+        if (!isset($uploadedFiles['alternative_content'])) {
+            return [];
         }
 
-        $uploadedFile = $uploadedFiles['alternate_content'];
+        $uploadedFile = $uploadedFiles['alternative_content'];
 
         if ($uploadedFile['error'] !== UPLOAD_ERR_OK) {
             throw new Exception("File upload error: " . $uploadedFile['error']);
@@ -76,10 +80,18 @@ class AlternativeContentPageHandler implements PageHandler
         return $uploadedFile;
     }
 
+    private function getAbsoluteFilePath(): string
+    {
+        return PageManager::getContentDir() . $this->page->meta->parentPath . DIRECTORY_SEPARATOR . $this->page->meta->alternative_content;
+    }
+
     private function deleteOldFile(): void
     {
         $page = $this->page;
-        $oldFilePath = PageManager::getContentDir() . DIRECTORY_SEPARATOR . $page->meta->parentPath . DIRECTORY_SEPARATOR . $page->meta->alternative_content;
+        if (!isset($page->meta->alternative_content)) {
+            return;
+        }
+        $oldFilePath = $this->getAbsoluteFilePath();
         if (file_exists($oldFilePath) && !unlink($oldFilePath)) {
             throw new Exception("Failed to delete the old file at {$oldFilePath}");
         }

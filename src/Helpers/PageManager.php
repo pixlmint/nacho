@@ -75,6 +75,24 @@ class PageManager implements SingletonInterface
         }
     }
 
+    public function delete(string $id): bool
+    {
+        $page = $this->getPage($id);
+
+        if (!$page) {
+            return true;
+        }
+
+        $handler = $this->getPageHandler($page);
+        $handler->handleDelete();
+
+        if (is_file($page->file)) {
+            return unlink($page->file);
+        }
+
+        return true;
+    }
+
     public function editPage(string $url, string $newContent, array $newMeta): bool
     {
         $page = $this->getPage($url);
@@ -100,7 +118,7 @@ class PageManager implements SingletonInterface
         return $this->fileHelper->storePage($newPage);
     }
 
-    public function create(string $parentFolder, string $title, bool $isFolder = false): bool
+    public function create(string $parentFolder, string $title, bool $isFolder = false): ?PicoPage
     {
         $page = $this->getPage($parentFolder);
 
@@ -119,21 +137,29 @@ class PageManager implements SingletonInterface
         $contentDir = self::getContentDir();
 
         $parentDir = preg_replace('/index.md$/', '', $parentFolder);
+        if (!str_ends_with($parentDir, '/')) {
+            $parentDir .= '/';
+        }
         if ($isFolder) {
             // TODO: Folder names that contain a space don't work
-            $directory = $contentDir . $parentDir . DIRECTORY_SEPARATOR . $title;
+            $directory = $contentDir . $parentDir . $title;
             mkdir($directory);
             $file = $directory . DIRECTORY_SEPARATOR . 'index.md';
             $newPage->id = $parentDir . $title;
         } else {
             $fileName = FileNameHelper::generateFileNameFromTitle($meta->title);
-            $file = $contentDir . $parentDir . DIRECTORY_SEPARATOR . $fileName;
+            $file = $contentDir . $parentDir . $fileName;
+            $fileName = preg_replace('/\.md$/', '', $fileName);
             $newPage->id = $parentDir . $fileName;
         }
 
         $newPage->file = $file;
 
-        return $this->fileHelper->storePage($newPage);
+        $success = $this->fileHelper->storePage($newPage);
+
+        if ($success)
+            return $newPage;
+        return null;
     }
 
     public function readPages(): void

@@ -14,24 +14,28 @@ class FileNameHelper
     public static function slugify(string $text, string $divider = '-'): string
     {
         // replace non letter or digits by divider
-        $text = preg_replace('~[^\pL\d]+~u', $divider, $text);
+        $newText = preg_replace('~[^\pL\d]+~u', $divider, $text);
 
         // remove unwanted characters
-        $text = preg_replace('~[^-\w]+~', '', $text);
+        $newText = preg_replace('~[^-\w]+~', '', $newText);
 
         // trim
-        $text = trim($text, $divider);
+        $newText = trim($newText, $divider);
 
         // remove duplicate divider
-        $text = preg_replace('~-+~', $divider, $text);
+        $newText = preg_replace('~-+~', $divider, $newText);
 
         // lowercase
-        $text = strtolower($text);
+        $newText = strtolower($newText);
 
-        if (empty($text)) {
-            throw new Exception('File Name cannot be empty (' . $text . ')');
+        if (empty($newText)) {
+            throw new Exception('File Name cannot be empty (' . $newText . ')');
         }
 
-        return $text;
+        if (str_starts_with($text, '.')) {
+            $newText = '.' . $newText;
+        }
+
+        return $newText;
     }
 }
