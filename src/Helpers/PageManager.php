@@ -16,7 +16,7 @@ class PageManager implements SingletonInterface
      * Set this flag to True if you want an additional 'children' index when getting pages
      * Will increase execution time considerably so use cautiously
      */
-    const INCLUDE_PAGE_TREE = true;
+    const INCLUDE_PAGE_TREE = false;
 
     /** @var array|PicoPage[] $pages */
     private array $pages;
