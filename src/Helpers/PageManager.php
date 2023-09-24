@@ -12,8 +12,18 @@ use Symfony\Component\Yaml\Exception\ParseException;
 
 class PageManager implements SingletonInterface
 {
+    /**
+     * Set this flag to True if you want an additional 'children' index when getting pages
+     * Will increase execution time considerably so use cautiously
+     */
+    const INCLUDE_PAGE_TREE = true;
+
     /** @var array|PicoPage[] $pages */
     private array $pages;
+
+    /** @var array|PicoPage[] $pageTree */
+    private array $pageTree = [];
+
     private MetaHelper $metaHelper;
     private PageSecurityHelper $pageSecurityHelper;
     private FileHelper $fileHelper;
@@ -46,9 +56,52 @@ class PageManager implements SingletonInterface
         return $this->pages;
     }
 
+    public function getPageTree(): array
+    {
+        if (!self::INCLUDE_PAGE_TREE) {
+            throw new Exception('Page tree is not enabled. Set INCLUDE_PAGE_TREE to true in PageManager.php');
+        }
+
+        if (!$this->pageTree) {
+            $this->readPages();
+        }
+
+        return $this->pageTree;
+    }
+
     public function getPage(string $url): ?PicoPage
     {
-        $pages = $this->getPages();
+        if (self::INCLUDE_PAGE_TREE) {
+            $pages = $this->getPageTree();
+            return $this->getPageFromTree($pages, $url);
+        } else {
+            $pages = $this->getPages();
+            return $this->getPageFromFlat($pages, $url);
+        }
+    }
+
+    private function getPageFromTree(array $pages, string $url): ?PicoPage
+    {
+        foreach ($pages as $page) {
+            if (!isset($page->id)) {
+                continue;
+            }
+            if ($page->id === $url) {
+                return $page;
+            }
+            if (isset($page->children)) {
+                $childPage = $this->getPageFromTree($page->children, $url);
+                if ($childPage) {
+                    return $childPage;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function getPageFromFlat(array $pages, string $url): ?PicoPage
+    {
         foreach ($pages as $page) {
             if (!isset($page->id)) {
                 continue;
@@ -218,6 +271,11 @@ class PageManager implements SingletonInterface
                 $this->pages[$id] = $page;
             }
         }
+        if (self::INCLUDE_PAGE_TREE) {
+            $this->pageTree = [];
+            $rootPage = $this->getPage('/');
+            $this->pageTree = ['/' => $this->findChildPages('/', $rootPage, $this->pages)];
+        }
     }
 
     /**
@@ -236,5 +294,46 @@ class PageManager implements SingletonInterface
     public static function getContentDir(): string
     {
         return $_SERVER['DOCUMENT_ROOT'] . '/content';
+    }
+
+    /**
+     * Return if the given path is a subpath of the given parent path(s)
+     */
+    public static function isSubPath(string $path, string $parentPath): bool
+    {
+        return str_starts_with($path, $parentPath) && $path !== $parentPath;
+    }
+
+    private static function isDirectChild(string $path, string $parentPath): bool
+    {
+        if (!self::isSubPath($path, $parentPath)) {
+            return false;
+        }
+
+        if ($parentPath === '/') {
+            if (count(explode('/', $path)) === 2) {
+                return true;
+            }
+            return false;
+        }
+
+        return count(explode('/', $path)) - 1 === count(explode('/', $parentPath));
+    }
+
+    public function findChildPages(string $id, PicoPage &$parentPage, array $pages): PicoPage
+    {
+        foreach ($pages as $childId => $page) {
+            if (isset($page->meta->min_role)) {
+                if (!$this->pageSecurityHelper->isPageShowingForCurrentUser($page)) {
+                    continue;
+                }
+            }
+            if (self::isDirectChild($childId, $id)) {
+                $page = $this->findChildPages($childId, $page, $pages);
+                $parentPage->children[$childId] = $page;
+            }
+        }
+
+        return $parentPage;
     }
 }

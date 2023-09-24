@@ -54,6 +54,7 @@ class Core implements SingletonInterface
 
         $routes = $hookHandler->executeHook(PreFindRouteAnchor::getName(), ['routes' => RouteFinder::getInstance()->getRoutes(), 'path' => $path]);
         RouteFinder::getInstance()->setRoutes($routes);
+//        print_r($routes);
 
         $route = RouteFinder::getInstance()->getRoute($path);
         $route = $hookHandler->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
