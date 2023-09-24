@@ -273,7 +273,9 @@ class PageManager implements SingletonInterface
         }
         if (self::$INCLUDE_PAGE_TREE) {
             $this->pageTree = [];
+            self::$INCLUDE_PAGE_TREE = false;
             $rootPage = $this->getPage('/');
+            self::$INCLUDE_PAGE_TREE = true;
             $this->pageTree = ['/' => $this->findChildPages('/', $rootPage, $this->pages)];
         }
     }
