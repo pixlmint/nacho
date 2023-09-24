@@ -17,7 +17,7 @@ abstract class AbstractController
         $this->nacho = $nacho;
     }
 
-    protected function getTwig()
+    protected function getTwig(): ?Environment
     {
         if (!$this->twig) {
             $loader = new FilesystemLoader($_SERVER['DOCUMENT_ROOT'] . '/src/Views');
@@ -31,22 +31,22 @@ abstract class AbstractController
         return $this->twig;
     }
 
-    protected function redirect(string $route)
+    protected function redirect(string $route): void
     {
         header('HTTP/1.1 302');
-        header("Location: ${route}");
+        header("Location: {$route}");
         die();
     }
 
-    protected function json(array $json = [], int $code = 200)
+    protected function json(array $json = [], int $code = 200): false|string
     {
-        header("HTTP/1.1 ${code}");
+        header("HTTP/1.1 {$code}");
         header("content-type: application/json");
         
         return json_encode($json);
     }
 
-    protected function render(string $file, array $args = [])
+    protected function render(string $file, array $args = []): string
     {
         $args['user'] = $_SESSION['user'];
         $args['nacho'] = $this->nacho;
@@ -54,12 +54,12 @@ abstract class AbstractController
         return $this->getTwig()->render($file, $args);
     }
 
-    public function is_granted($role)
+    public function is_granted($role): bool
     {
         return $this->isGranted($role);
     }
 
-    protected function isGranted($role)
+    protected function isGranted($role): bool
     {
         return $this->nacho->isGranted($role);
     }

@@ -16,7 +16,7 @@ class PageManager implements SingletonInterface
      * Set this flag to True if you want an additional 'children' index when getting pages
      * Will increase execution time considerably so use cautiously
      */
-    public static bool $INCLUDE_PAGE_TREE = false;
+    public static bool $INCLUDE_PAGE_TREE = true;
 
     /** @var array|PicoPage[] $pages */
     private array $pages;
@@ -150,7 +150,7 @@ class PageManager implements SingletonInterface
     {
         $page = $this->getPage($url);
         if (!$page) {
-            throw new Exception("${url} does not exist");
+            throw new Exception("{$url} does not exist");
         }
         $oldMeta = (array)$page->meta;
         $newMeta = array_merge($oldMeta, $newMeta);

@@ -98,7 +98,7 @@ class Core implements SingletonInterface
         $function = $route->getFunction();
         if (!method_exists($cnt, $function)) {
             header('Http/1.1 404');
-            return "${function} does not exist in ${controllerDir}";
+            return "{$function} does not exist in {$controllerDir}";
         }
 
         return $cnt->$function(Request::getInstance());
