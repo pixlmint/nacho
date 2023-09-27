@@ -54,6 +54,7 @@ class Core implements SingletonInterface
 
         $routes = $hookHandler->executeHook(PreFindRouteAnchor::getName(), ['routes' => RouteFinder::getInstance()->getRoutes(), 'path' => $path]);
         RouteFinder::getInstance()->setRoutes($routes);
+//        print_r($routes);
 
         $route = RouteFinder::getInstance()->getRoute($path);
         $route = $hookHandler->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
@@ -97,7 +98,7 @@ class Core implements SingletonInterface
         $function = $route->getFunction();
         if (!method_exists($cnt, $function)) {
             header('Http/1.1 404');
-            return "${function} does not exist in ${controllerDir}";
+            return "{$function} does not exist in {$controllerDir}";
         }
 
         return $cnt->$function(Request::getInstance());

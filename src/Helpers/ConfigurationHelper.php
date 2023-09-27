@@ -29,7 +29,7 @@ class ConfigurationHelper implements SingletonInterface
         }
     }
 
-    public function bootstrapConfig(string $configName)
+    public function bootstrapConfig(string $configName): void
     {
         if (key_exists($configName, $this->config)) {
             $this->$configName = $this->config[$configName];

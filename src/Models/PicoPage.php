@@ -12,6 +12,8 @@ class PicoPage
     public ?PicoMeta $meta = null;
     public string $file = '';
     public ?string $content = null;
+    /** If PageManager.php has INCLUDE_PAGE_TREE set to true this will include this page's child pages */
+    public ?array $children = null;
 
     public function __construct(?array $data = [])
     {

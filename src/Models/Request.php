@@ -44,7 +44,7 @@ class Request implements RequestInterface, SingletonInterface
         return $this->route;
     }
 
-    private function bootstrapSelf()
+    private function bootstrapSelf(): void
     {
         foreach ($_SERVER as $key => $value) {
             $this->{$this->toCamelCase($key)} = $value;
