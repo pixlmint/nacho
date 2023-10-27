@@ -31,9 +31,13 @@ abstract class AbstractController
         return $this->twig;
     }
 
-    protected function redirect(string $route): void
+    protected function redirect(string $route, bool $isPermanent = false): void
     {
-        header('HTTP/1.1 302');
+        if ($isPermanent) {
+            header('HTTP/1.1 301');
+        } else {
+            header('HTTP/1.1 302');
+        }
         header("Location: {$route}");
         die();
     }
