@@ -10,6 +10,7 @@ use Nacho\Helpers\HookHandler;
 use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PreCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PrePrintResponseAnchor;
+use Nacho\Models\HttpResponse;
 use Nacho\Models\Request;
 use Nacho\ORM\RepositoryManager;
 use Nacho\Security\JsonUserHandler;
@@ -84,7 +85,7 @@ class Core implements SingletonInterface
         $content->send();
     }
 
-    private function getContent(): string
+    private function getContent(): Response
     {
         $route = Request::getInstance()->getRoute();
         $userHandler = static::getUserHandler();
@@ -97,8 +98,7 @@ class Core implements SingletonInterface
         $cnt = new $controllerDir($this->nacho);
         $function = $route->getFunction();
         if (!method_exists($cnt, $function)) {
-            header('Http/1.1 404');
-            return "{$function} does not exist in {$controllerDir}";
+            return new HttpResponse("{$function} does not exist in {$controllerDir}", 404);
         }
 
         return $cnt->$function(Request::getInstance());
