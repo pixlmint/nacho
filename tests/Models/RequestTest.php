@@ -1,6 +1,6 @@
 <?php
 
-namespace Test;
+namespace Test\Models;
 
 use Nacho\Controllers\TestController;
 use Nacho\Models\Request;
