@@ -2,6 +2,8 @@
 
 namespace Nacho\Controllers;
 
+use Nacho\Models\HttpRedirectResponse;
+use Nacho\Models\HttpResponse;
 use Nacho\Nacho;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -31,31 +33,27 @@ abstract class AbstractController
         return $this->twig;
     }
 
-    protected function redirect(string $route, bool $isPermanent = false): void
+    protected function redirect(string $route, bool $isPermanent = false): HttpRedirectResponse
     {
-        if ($isPermanent) {
-            header('HTTP/1.1 301');
-        } else {
-            header('HTTP/1.1 302');
-        }
-        header("Location: {$route}");
-        die();
+        return new HttpRedirectResponse($route, $isPermanent);
     }
 
-    protected function json(array $json = [], int $code = 200): false|string
+    protected function json(array $json = [], int $code = 200): HttpResponse
     {
-        header("HTTP/1.1 {$code}");
-        header("content-type: application/json");
-        
-        return json_encode($json);
+        $response = new HttpResponse(json_encode($json), $code);
+        $response->setHeader('content-type', 'application/json');
+
+        return $response;
     }
 
-    protected function render(string $file, array $args = []): string
+    protected function render(string $file, array $args = []): HttpResponse
     {
         $args['user'] = $_SESSION['user'];
         $args['nacho'] = $this->nacho;
-    
-        return $this->getTwig()->render($file, $args);
+
+        $content = $this->getTwig()->render($file, $args);
+       
+        return new HttpResponse($content);
     }
 
     public function is_granted($role): bool

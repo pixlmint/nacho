@@ -2,6 +2,7 @@
 
 namespace Nacho;
 
+use Nacho\Contracts\Response;
 use Nacho\Contracts\SingletonInterface;
 use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Helpers\ConfigurationHelper;
@@ -54,7 +55,6 @@ class Core implements SingletonInterface
 
         $routes = $hookHandler->executeHook(PreFindRouteAnchor::getName(), ['routes' => RouteFinder::getInstance()->getRoutes(), 'path' => $path]);
         RouteFinder::getInstance()->setRoutes($routes);
-//        print_r($routes);
 
         $route = RouteFinder::getInstance()->getRoute($path);
         $route = $hookHandler->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
@@ -75,13 +75,13 @@ class Core implements SingletonInterface
         HookHandler::getInstance()->registerConfigHooks($config->getHooks());
     }
 
-    private function printContent(?string $content): void
+    private function printContent(?Response $content): void
     {
         if (!$content) {
             $route = RouteFinder::getInstance()->getRoute('/');
             $content = $this->getContent($route);
         }
-        echo $content;
+        $content->send();
     }
 
     private function getContent(): string

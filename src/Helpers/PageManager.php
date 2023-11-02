@@ -16,7 +16,7 @@ class PageManager implements SingletonInterface
      * Set this flag to True if you want an additional 'children' index when getting pages
      * Will increase execution time considerably so use cautiously
      */
-    public static bool $INCLUDE_PAGE_TREE = true;
+    public static bool $INCLUDE_PAGE_TREE = false;
 
     /** @var array|PicoPage[] $pages */
     private array $pages;
@@ -276,7 +276,11 @@ class PageManager implements SingletonInterface
             self::$INCLUDE_PAGE_TREE = false;
             $rootPage = $this->getPage('/');
             self::$INCLUDE_PAGE_TREE = true;
-            $this->pageTree = ['/' => $this->findChildPages('/', $rootPage, $this->pages)];
+            if ($rootPage) {
+                $this->pageTree = ['/' => $this->findChildPages('/', $rootPage, $this->pages)];
+            } else {
+                throw new Exception('Unable to find root page');
+            }
         }
     }
 

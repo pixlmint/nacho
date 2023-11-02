@@ -20,6 +20,9 @@ class Nacho
         $this->pageManager = PageManager::getInstance();
     }
 
+    /**
+     * @deprecated Use Request::getInstance() instea
+     */
     public function getRequest(): RequestInterface
     {
         return $this->request;
