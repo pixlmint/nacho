@@ -3,13 +3,14 @@
 namespace Nacho\Hooks;
 
 use Exception;
+use Nacho\Nacho;
 
 abstract class AbstractAnchor
 {
     protected array $hooks = [];
     protected array $arguments = [];
     
-    public function addHook($hook)
+    public function addHook($hook): void
     {
         $this->hooks[] = $hook;
     }
@@ -18,7 +19,7 @@ abstract class AbstractAnchor
     {
         $this->populateArguments($args);
         foreach ($this->hooks as $hook) {
-            $cls = new $hook();
+            $cls = Nacho::$container->get($hook);
             $this->exec($cls);
         }
 

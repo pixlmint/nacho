@@ -2,7 +2,9 @@
 
 namespace Nacho\Models;
 
-class Route
+use Nacho\Contracts\RouteInterface;
+
+class Route implements RouteInterface
 {
     private string $path;
     private string $controller;
@@ -30,17 +32,17 @@ class Route
         }
     }
 
-    public function getVariables()
+    public function getVariables(): array
     {
         return $this->variables;
     }
 
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
 
-    public function getController()
+    public function getController(): string
     {
         return $this->controller;
     }
@@ -50,7 +52,7 @@ class Route
         return $this->minRole;
     }
 
-    public function getFunction()
+    public function getFunction(): string
     {
         return $this->function;
     }

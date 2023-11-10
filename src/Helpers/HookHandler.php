@@ -3,22 +3,13 @@
 namespace Nacho\Helpers;
 
 use Nacho\Contracts\Hooks\AnchorConfigurationInterface;
+use Nacho\Contracts\Hooks\HookInterface;
 use Nacho\Contracts\SingletonInterface;
+use Nacho\Nacho;
 
-class HookHandler implements SingletonInterface
+class HookHandler
 {
-    private array $anchors;
-
-    private static ?SingletonInterface $instance = null;
-
-    public static function getInstance(): SingletonInterface|HookHandler|null
-    {
-        if (!self::$instance) {
-            self::$instance = new HookHandler();
-        }
-
-        return self::$instance;
-    }
+    private array|AnchorConfigurationInterface $anchors;
 
     public function registerHook(string $anchor, string $hook): void
     {
@@ -27,15 +18,24 @@ class HookHandler implements SingletonInterface
 
     public function executeHook(string $anchorName, array $arguments): mixed
     {
+        /** @var HookInterface $hook */
+        $hook = Nacho::$container->get($anchorName);
+        $hook->run($arguments);
         return $this->anchors[$anchorName]->run($arguments);
     }
 
-    public function registerAnchor(string $name, AnchorConfigurationInterface $anchor)
+    public function getAnchors(): array|AnchorConfigurationInterface
     {
+        return $this->anchors;
+    }
+
+    public function registerAnchor(string $name, AnchorConfigurationInterface $anchor): void
+    {
+        Nacho::$container->set($name, $anchor);
         $this->anchors[$name] = $anchor;
     }
 
-    public function registerConfigHooks(array $hooks)
+    public function registerConfigHooks(array $hooks): void
     {
         foreach ($hooks as $hook) {
             $this->registerHook($hook['anchor'], $hook['hook']);

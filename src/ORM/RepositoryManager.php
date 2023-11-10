@@ -2,32 +2,33 @@
 
 namespace Nacho\ORM;
 
-use Nacho\Contracts\SingletonInterface;
+use Nacho\Contracts\DataHandlerInterface;
 use Nacho\Helpers\DataHandler;
+use Nacho\Nacho;
 
-class RepositoryManager implements SingletonInterface
+class RepositoryManager implements RepositoryManagerInterface
 {
-    private static ?SingletonInterface $instance = null;
     private DataHandler $dataHandler;
     /** @var array|AbstractRepository[]|RepositoryInterface[] $repositories  */
     private array $repositories = [];
 
-    public function __construct()
+    public function __construct(DataHandlerInterface $dataHandler)
     {
-        $this->dataHandler = new DataHandler();
+        $this->dataHandler = $dataHandler;
     }
 
-    public function getRepository(string $repoClass): RepositoryInterface
+    public function getRepository(string $repositoryClass): RepositoryInterface
     {
-        if (key_exists($repoClass, $this->repositories)) {
-            return $this->repositories[$repoClass];
+        if (key_exists($repositoryClass, $this->repositories)) {
+            return $this->repositories[$repositoryClass];
         }
 
+
         /** @var RepositoryInterface $repo */
-        $repo = new $repoClass();
+        $repo = Nacho::$container->get($repositoryClass);
         $data = $this->dataHandler->readData($repo::getDataName());
         $repo->setData($data);
-        $this->repositories[$repoClass] = $repo;
+        $this->repositories[$repositoryClass] = $repo;
 
         return $repo;
     }
@@ -46,14 +47,5 @@ class RepositoryManager implements SingletonInterface
         }
 
         $this->repositories = [];
-    }
-
-    public static function getInstance(): self
-    {
-        if (!self::$instance) {
-            self::$instance = new RepositoryManager();
-        }
-
-        return self::$instance;
     }
 }

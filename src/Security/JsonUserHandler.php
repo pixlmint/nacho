@@ -5,27 +5,32 @@ namespace Nacho\Security;
 use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Exceptions\PasswordInvalidException;
 use Nacho\Helpers\DataHandler;
+use Nacho\Nacho;
 use Nacho\ORM\ModelInterface;
 use Nacho\ORM\RepositoryInterface;
 use Nacho\ORM\RepositoryManager;
+use Nacho\ORM\RepositoryManagerInterface;
 
 class JsonUserHandler implements UserHandlerInterface
 {
+    protected UserRepository $userRepository;
+
     public function __construct()
     {
         if (!isset($_SESSION['user'])) {
             $_SESSION['user'] = ['username' => 'Guest', 'password' => null, 'role' => 'Guest'];
         }
+        $this->userRepository = Nacho::$container->get(UserRepository::class);
     }
 
-    public function getCurrentUser()
+    public function getCurrentUser(): ModelInterface|UserInterface
     {
         return $this->findUser($_SESSION['user']['username']);
     }
 
-    public function getUsers()
+    public function getUsers(): array
     {
-        return RepositoryManager::getInstance()->getRepository(UserRepository::class)->getData();
+        return $this->userRepository->getData();
     }
 
     /**
@@ -52,17 +57,17 @@ class JsonUserHandler implements UserHandlerInterface
     {
         $user = $this->findUser($username);
         $user->setPassword(password_hash($newPassword, PASSWORD_DEFAULT));
-        self::getUserRepository()->set($user);
+        $this->userRepository->set($user);
 
         return $user;
     }
 
     public function findUser($username): ModelInterface|UserInterface
     {
-        return self::getUserRepository()->getByUsername($username);
+        return $this->userRepository->getByUsername($username);
     }
 
-    public function logout()
+    public function logout(): void
     {
         session_destroy();
     }
@@ -79,10 +84,5 @@ class JsonUserHandler implements UserHandlerInterface
         }
 
         return array_search($user->getRole(), $this->getRoles()) <= array_search($minRight, $this->getRoles());
-    }
-
-    private static function getUserRepository(): UserRepository|RepositoryInterface
-    {
-        return RepositoryManager::getInstance()->getRepository(UserRepository::class);
     }
 }

@@ -4,7 +4,7 @@ namespace Nacho\Helpers;
 
 use Exception;
 use Nacho\Contracts\UserHandlerInterface;
-use Nacho\Core;
+use Nacho\Nacho;
 use Nacho\Models\PicoPage;
 use Nacho\Security\PageSecurityStatus;
 use Nacho\Security\UserInterface;
@@ -14,9 +14,9 @@ class PageSecurityHelper
     private UserHandlerInterface $userHandler;
     private array $privateFolders = [];
 
-    public function __construct()
+    public function __construct(UserHandlerInterface $userHandler)
     {
-        $this->userHandler = Core::getUserHandler();
+        $this->userHandler = $userHandler;
     }
 
     public static function isPagePublic(PicoPage $page): bool

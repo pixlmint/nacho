@@ -11,9 +11,13 @@ class MarkdownPageHandler implements PageHandler
     private Parsedown $mdParser;
     private PicoPage $page;
 
-    public function __construct(PicoPage $page)
+    public function __construct(Parsedown $mdParser)
     {
-        $this->mdParser = new Parsedown();
+        $this->mdParser = $mdParser;
+    }
+
+    public function setPage(PicoPage $page): void
+    {
         $this->page = $page;
     }
 

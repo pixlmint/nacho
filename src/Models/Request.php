@@ -4,33 +4,23 @@ namespace Nacho\Models;
 
 use Exception;
 use Nacho\Contracts\RequestInterface;
-use Nacho\Contracts\SingletonInterface;
+use Nacho\Contracts\RouteInterface;
 use Nacho\Helpers\ServerVarsParser;
 
-class Request implements RequestInterface, SingletonInterface
+class Request implements RequestInterface
 {
     public string $requestMethod;
     public ?string $contentType;
     public array $headers;
     public array $body = [];
     protected ?Route $route = null;
-    private static ?SingletonInterface $instance = null;
 
     function __construct()
     {
         $this->bootstrapSelf();
     }
 
-    public static function getInstance(): SingletonInterface|Request
-    {
-        if (!self::$instance) {
-            self::$instance = new Request();
-        }
-
-        return self::$instance;
-    }
-
-    public function setRoute(Route $route): void
+    public function setRoute(RouteInterface $route): void
     {
         $this->route = $route;
     }
@@ -55,7 +45,7 @@ class Request implements RequestInterface, SingletonInterface
         $this->headers = ServerVarsParser::parseHeaders();
     }
 
-    private function toCamelCase($string)
+    private function toCamelCase($string): array|string
     {
         $result = strtolower($string);
 

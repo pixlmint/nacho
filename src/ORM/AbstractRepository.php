@@ -2,8 +2,6 @@
 
 namespace Nacho\ORM;
 
-use App\Models\Person;
-
 abstract class AbstractRepository
 {
     /** @var array|ModelInterface[] $data */

@@ -5,6 +5,7 @@ namespace Nacho\Helpers;
 use Exception;
 use Nacho\Contracts\AlternativeContentType;
 use Nacho\Contracts\PageHandler;
+use Nacho\Nacho;
 use Nacho\Exceptions\BadContentRendererException;
 use Nacho\Models\PicoPage;
 use Nacho\Models\Request;
@@ -12,8 +13,14 @@ use Nacho\Models\Request;
 class AlternativeContentPageHandler implements PageHandler
 {
     private PicoPage $page;
+    private Request $request;
 
-    public function __construct(PicoPage $page)
+    public function __construct(Request $request)
+    {
+        $this->request = $request;
+    }
+
+    public function setPage(PicoPage $page): void
     {
         $this->page = $page;
         if (!$this->isValidContentType()) {
@@ -21,10 +28,10 @@ class AlternativeContentPageHandler implements PageHandler
         }
     }
 
-    private function isValidContentType()
+    private function isValidContentType(): bool
     {
         /** @var array|string[]|AlternativeContentType[] $enabledContentTypes */
-        $enabledContentTypes = ConfigurationHelper::getInstance()->getAlternativeContentHandlers();
+        $enabledContentTypes = Nacho::$container->get(ConfigurationContainer::class)->getAlternativeContentHandlers();
 
         foreach ($enabledContentTypes as $contentType) {
             if ($contentType::rendererValue() === $this->page->meta->renderer) {
@@ -64,8 +71,7 @@ class AlternativeContentPageHandler implements PageHandler
 
     private function getUploadedFile(): array
     {
-        $request = Request::getInstance();
-        $uploadedFiles = $request->getFiles();
+        $uploadedFiles = $this->request->getFiles();
 
         if (!isset($uploadedFiles['alternative_content'])) {
             return [];

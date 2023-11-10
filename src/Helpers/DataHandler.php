@@ -3,8 +3,9 @@
 namespace Nacho\Helpers;
 
 use Nacho\Contracts\ArrayableInterface;
+use Nacho\Contracts\DataHandlerInterface;
 
-class DataHandler
+class DataHandler implements DataHandlerInterface
 {
     private array $data = [];
 
@@ -22,9 +23,9 @@ class DataHandler
         return $this->data[$dt];
     }
 
-    public function writeData(string $dt, array $data): void
+    public function writeData(string $dataType, array $data): void
     {
-        $this->data[$dt] = $data;
+        $this->data[$dataType] = $data;
     }
 
     public function storeAllData(): void
@@ -34,15 +35,15 @@ class DataHandler
         }
     }
 
-    public function removeElement(string $dt, mixed $element): void
+    public function deleteElement(string $dataType, mixed $element): void
     {
-        $data = $this->readData($dt);
+        $data = $this->readData($dataType);
         if (!in_array($element, $data)) {
             return;
         }
         $index = array_search($element, $data);
-        $removed = array_slice($data, $index, $index + 1);
-        $this->writeData($dt, $data);
+        unset($data[$index]);
+        $this->writeData($dataType, $data);
     }
 
     public function addElement(string $dt, mixed $element): void

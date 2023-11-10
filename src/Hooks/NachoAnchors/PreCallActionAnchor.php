@@ -3,10 +3,8 @@
 namespace Nacho\Hooks\NachoAnchors;
 
 use Nacho\Contracts\Hooks\AnchorConfigurationInterface;
-use Nacho\Contracts\Hooks\PostFindRoute;
 use Nacho\Contracts\Hooks\PreCallAction;
 use Nacho\Hooks\AbstractAnchor;
-use Nacho\Hooks\HookArgument;
 
 class PreCallActionAnchor extends AbstractAnchor implements AnchorConfigurationInterface
 {

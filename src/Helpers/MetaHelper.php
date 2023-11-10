@@ -9,7 +9,7 @@ class MetaHelper
     private $metaHeaders;
     private ?Parser $yamlParser = null;
 
-    public function parseFileMeta($rawContent, array $headers)
+    public function parseFileMeta($rawContent, array $headers): array
     {
         $pattern = "/^(?:\xEF\xBB\xBF)?(\/(\*)|---)[[:blank:]]*(?:\r)?\n"
             . "(?:(.*?)(?:\r)?\n)?(?(2)\*\/|---)[[:blank:]]*(?:(?:\r)?\n|$)/s";
@@ -59,7 +59,7 @@ class MetaHelper
         return $meta;
     }
 
-    public function getMetaHeaders()
+    public function getMetaHeaders(): array
     {
         if ($this->metaHeaders === null) {
             $this->metaHeaders = array(

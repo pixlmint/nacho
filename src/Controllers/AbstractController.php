@@ -2,6 +2,7 @@
 
 namespace Nacho\Controllers;
 
+use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Models\HttpRedirectResponse;
 use Nacho\Models\HttpResponse;
 use Nacho\Nacho;
@@ -11,12 +12,11 @@ use Twig\TwigFunction;
 
 abstract class AbstractController
 {
-    protected Nacho $nacho;
     private ?Environment $twig = null;
+    private UserHandlerInterface $userHandler;
 
-    public function __construct(Nacho $nacho)
-    {
-        $this->nacho = $nacho;
+    public function __construct() {
+        $this->userHandler = Nacho::$container->get(UserHandlerInterface::class);
     }
 
     protected function getTwig(): ?Environment
@@ -49,7 +49,6 @@ abstract class AbstractController
     protected function render(string $file, array $args = []): HttpResponse
     {
         $args['user'] = $_SESSION['user'];
-        $args['nacho'] = $this->nacho;
 
         $content = $this->getTwig()->render($file, $args);
        
@@ -63,6 +62,6 @@ abstract class AbstractController
 
     protected function isGranted($role): bool
     {
-        return $this->nacho->isGranted($role);
+        return $this->userHandler->isGranted($role);
     }
 }

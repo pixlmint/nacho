@@ -2,6 +2,8 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Nacho\Core;
+use Nacho\Nacho;
 
-Core::getInstance()->run();
+$core = new Nacho();
+$core->init();
+$core->run();

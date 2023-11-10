@@ -4,13 +4,15 @@ namespace Nacho\Helpers;
 
 use Exception;
 use Nacho\Contracts\PageHandler;
+use Nacho\Contracts\PageManagerInterface;
 use Nacho\Contracts\SingletonInterface;
-use Nacho\Core;
+use Nacho\Contracts\UserHandlerInterface;
+use Nacho\Nacho;
 use Nacho\Models\PicoMeta;
 use Nacho\Models\PicoPage;
 use Symfony\Component\Yaml\Exception\ParseException;
 
-class PageManager implements SingletonInterface
+class PageManager implements PageManagerInterface
 {
     /**
      * Set this flag to True if you want an additional 'children' index when getting pages
@@ -27,24 +29,15 @@ class PageManager implements SingletonInterface
     private MetaHelper $metaHelper;
     private PageSecurityHelper $pageSecurityHelper;
     private FileHelper $fileHelper;
+    private UserHandlerInterface $userHandler;
 
-    private static SingletonInterface|PageManager|null $instance = null;
-
-    public function __construct()
+    public function __construct(MetaHelper $metaHelper, PageSecurityHelper $pageSecurityHelper, FileHelper $fileHelper, UserHandlerInterface $userHandler)
     {
         $this->pages = [];
-        $this->metaHelper = new MetaHelper();
-        $this->pageSecurityHelper = new PageSecurityHelper();
-        $this->fileHelper = new FileHelper();
-    }
-
-    public static function getInstance(): SingletonInterface|PageManager
-    {
-        if (!self::$instance) {
-            self::$instance = new PageManager();
-        }
-
-        return self::$instance;
+        $this->metaHelper = $metaHelper;
+        $this->pageSecurityHelper = $pageSecurityHelper;
+        $this->fileHelper = $fileHelper;
+        $this->userHandler = $userHandler;
     }
 
     public function getPages(): array
@@ -122,10 +115,12 @@ class PageManager implements SingletonInterface
     private function getPageHandler(PicoPage $page): PageHandler
     {
         if (isset($page->meta->renderer)) {
-            return new AlternativeContentPageHandler($page);
+            $pageHandler = Nacho::$container->get(AlternativeContentPageHandler::class);
         } else {
-            return new MarkdownPageHandler($page);
+            $pageHandler = Nacho::$container->get(MarkdownPageHandler::class);
         }
+        $pageHandler->setPage($page);
+        return $pageHandler;
     }
 
     public function delete(string $id): bool
@@ -156,7 +151,7 @@ class PageManager implements SingletonInterface
         $newMeta = array_merge($oldMeta, $newMeta);
         // Fallback for older entries that don't yet possess the owner info
         if (!$newMeta['owner']) {
-            $newMeta['owner'] = Core::getUserHandler()->getCurrentUser()->getUsername();
+            $newMeta['owner'] = $this->userHandler->getCurrentUser()->getUsername();
         }
 
         $newPage = $page->duplicate();

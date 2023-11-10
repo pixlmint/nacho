@@ -2,10 +2,9 @@
 
 namespace Nacho\Helpers;
 
-use Nacho\Contracts\SingletonInterface;
 use Nacho\Exceptions\ConfigurationDoesNotExistException;
 
-class ConfigurationHelper implements SingletonInterface
+class ConfigurationContainer
 {
     private array $config;
 
@@ -15,15 +14,9 @@ class ConfigurationHelper implements SingletonInterface
     private array $security = [];
     private array $alternativeContentHandlers = [];
 
-    private static ?SingletonInterface $instance = null;
-
-    public function __construct(array $config = [])
+    public function init(array $config = []): void
     {
-        if ($config) {
-            $this->config = $config;
-        } else {
-            $this->config = include_once($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
-        }
+        $this->config = $config;
         foreach ($this->config as $name => $conf) {
             $this->bootstrapConfig($name);
         }
@@ -34,15 +27,6 @@ class ConfigurationHelper implements SingletonInterface
         if (key_exists($configName, $this->config)) {
             $this->$configName = $this->config[$configName];
         }
-    }
-
-    public static function getInstance(array $config = []): SingletonInterface|ConfigurationHelper|null
-    {
-        if (!self::$instance) {
-            self::$instance = new ConfigurationHelper($config);
-        }
-
-        return self::$instance;
     }
 
     public function getAlternativeContentHandlers(): array

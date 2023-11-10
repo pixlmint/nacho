@@ -2,41 +2,12 @@
 
 namespace Nacho\Helpers;
 
-use Nacho\Contracts\SingletonInterface;
+use Nacho\Contracts\RouteFinderInterface;
+use Nacho\Nacho;
 use Nacho\Models\Route;
 
-class RouteFinder implements SingletonInterface
+class RouteFinder implements RouteFinderInterface
 {
-    private array $routes;
-    private static ?RouteFinder $instance = null;
-
-    public function __construct()
-    {
-        $this->routes = ConfigurationHelper::getInstance()->getRoutes();
-    }
-
-    /**
-     * @return RouteFinder|SingletonInterface
-     */
-    public static function getInstance()
-    {
-        if (!self::$instance) {
-            self::$instance = new RouteFinder();
-        }
-
-        return self::$instance;
-    }
-
-    public function setRoutes(array $routes): void
-    {
-        $this->routes = $routes;
-    }
-
-    public function getRoutes(): array
-    {
-        return $this->routes;
-    }
-
     public function getRoute(string $path): Route
     {
         $route = $this->findRoute($path);
@@ -50,10 +21,11 @@ class RouteFinder implements SingletonInterface
 
     private function findRoute(string $path): ?Route
     {
+        $routes = Nacho::$container->get(ConfigurationContainer::class)->getRoutes();
         if ($path !== '/') {
             $path = substr($path, 1, strlen($path));
         }
-        foreach ($this->routes as $route) {
+        foreach ($routes as $route) {
             $tmpRoute = new Route($route);
             if ($tmpRoute->match($path)) {
                 return $tmpRoute;
