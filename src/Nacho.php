@@ -144,14 +144,6 @@ class Nacho implements NachoCoreInterface
         return new ContainerDefinitionsHolder(-1, [
             'path' => factory([self::class, 'getPath']),
             DataHandlerInterface::class => create(DataHandler::class),
-//            UserHandlerInterface::class => factory(function (ConfigurationContainer $config) {
-//                $securityConfig = $config->getSecurity();
-//                if (key_exists('userHandler', $securityConfig)) {
-//                    return $securityConfig['userHandler'];
-//                } else {
-//                    return JsonUserHandler::class;
-//                }
-//            }),
             UserHandlerInterface::class => create(JsonUserHandler::class),
             PageManagerInterface::class => create(PageManager::class)->constructor(
                 get(MetaHelper::class),

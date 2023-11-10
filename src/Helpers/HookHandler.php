@@ -18,9 +18,6 @@ class HookHandler
 
     public function executeHook(string $anchorName, array $arguments): mixed
     {
-        /** @var HookInterface $hook */
-        $hook = Nacho::$container->get($anchorName);
-        $hook->run($arguments);
         return $this->anchors[$anchorName]->run($arguments);
     }
 
