@@ -2,6 +2,8 @@
 
 namespace Nacho;
 
+use DateTime;
+use DateTimeZone;
 use DI\Container;
 use Nacho\Contracts\DataHandlerInterface;
 use Nacho\Contracts\NachoCoreInterface;
@@ -176,9 +178,17 @@ class Nacho implements NachoCoreInterface
                 get(LogWriterInterface::class),
                 "{date}\t{level}\t{message}",
             ),
-            LogWriterInterface::class => create(FileLogWriter::class)->constructor(
-                '/var/www/html/var/log/nacho.log',
-            ),
+            'logdir' => '/var/www/html/var/log',
+            LogWriterInterface::class => factory(function (Container $c) {
+                $logDir = $c->get('logdir');
+                if (!is_dir($logDir)) {
+                    mkdir($logDir, 0777, true);
+                }
+                $utc = new DateTimeZone('UTC');
+                $date = new DateTime('now', $utc);
+                $logDir .= DIRECTORY_SEPARATOR . $date->format('Y-m-d') . '.log';
+                return new FileLogWriter($logDir);
+            }),
         ]);
     }
 }
