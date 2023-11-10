@@ -16,6 +16,7 @@ use Nacho\Helpers\DataHandler;
 use Nacho\Helpers\FileHelper;
 use Nacho\Helpers\HookHandler;
 use Nacho\Helpers\Log\FileLogWriter;
+use Nacho\Helpers\Log\Logger;
 use Nacho\Helpers\Log\LogWriterInterface;
 use Nacho\Helpers\MetaHelper;
 use Nacho\Helpers\NachoContainerBuilder;
@@ -33,6 +34,7 @@ use Nacho\ORM\RepositoryManager;
 use Nacho\ORM\RepositoryManagerInterface;
 use Nacho\Security\JsonUserHandler;
 use Nacho\Security\UserRepository;
+use Psr\Log\LoggerInterface;
 use function DI\create;
 use function DI\factory;
 use function DI\get;
@@ -82,7 +84,9 @@ class Nacho implements NachoCoreInterface
 
         $routeFinder = self::$container->get(RouteFinderInterface::class);
         $route = $routeFinder->getRoute($path);
+        /** @var RouteInterface $route */
         $route = $hookHandler->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
+        self::$container->get(LoggerInterface::class)->info("Route for path {$route->getPath()} found: {$route->getController()}::{$route->getFunction()}");
 
         self::$container->get(RequestInterface::class)->setRoute($route);
 
@@ -92,6 +96,7 @@ class Nacho implements NachoCoreInterface
 
         $content = $hookHandler->executeHook(PrePrintResponseAnchor::getName(), ['response' => $content]);
         self::$container->get(RepositoryManagerInterface::class)->close();
+        self::$container->get(LogWriterInterface::class)->close();
         $this->printContent($content);
     }
 
@@ -115,8 +120,7 @@ class Nacho implements NachoCoreInterface
         $route = self::$container->get(RouteInterface::class);
         $userHandler = self::$container->get(UserHandlerInterface::class);
         if (!$userHandler->isGranted($route->getMinRole())) {
-            header('Http/1.1 401');
-            die();
+            return new HttpResponse('Unauthorized', 401);
         }
         $controllerClass = $route->getController();
         $controller = self::$container->get($controllerClass);
@@ -168,8 +172,12 @@ class Nacho implements NachoCoreInterface
             RouteFinderInterface::class => create(RouteFinder::class),
             UserRepository::class => create(UserRepository::class),
             MetaHelper::class => create(MetaHelper::class),
+            LoggerInterface::class => create(Logger::class)->constructor(
+                get(LogWriterInterface::class),
+                "{date}\t{level}\t{message}",
+            ),
             LogWriterInterface::class => create(FileLogWriter::class)->constructor(
-                get('/var/log/nacho.log'),
+                '/var/www/html/var/log/nacho.log',
             ),
         ]);
     }

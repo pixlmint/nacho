@@ -14,13 +14,14 @@ class FileLogWriter implements LogWriterInterface
     public function __construct(string $path)
     {
         $this->path = $path;
+        $this->createLogfile();
         $this->open();
     }
 
     /**
      * @inheritDoc
      */
-    public function write(string $message, Level $level, string $context): void
+    public function write(string $message): void
     {
         if (!$this->file) {
             $this->open();
@@ -46,5 +47,13 @@ class FileLogWriter implements LogWriterInterface
     public function close(): void
     {
         fclose($this->file);
+    }
+
+    private function createLogfile(): void
+    {
+        $directory = pathinfo($this->path, PATHINFO_DIRNAME);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0777, true);
+        }
     }
 }

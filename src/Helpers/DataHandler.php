@@ -4,10 +4,18 @@ namespace Nacho\Helpers;
 
 use Nacho\Contracts\ArrayableInterface;
 use Nacho\Contracts\DataHandlerInterface;
+use Nacho\Nacho;
+use Psr\Log\LoggerInterface;
 
 class DataHandler implements DataHandlerInterface
 {
     private array $data = [];
+    private LoggerInterface $logger;
+
+    public function __construct()
+    {
+        $this->logger = Nacho::$container->get(LoggerInterface::class);
+    }
 
     public static function getDataDir(): string
     {
@@ -56,6 +64,8 @@ class DataHandler implements DataHandlerInterface
     protected function storeData(string $dt, array $data): void
     {
         file_put_contents(self::getFileName($dt), json_encode(static::serializeData($data)));
+        $entryCount = count($data);
+        $this->logger->info("Stored $entryCount entries in file " . self::getFileName($dt));
     }
 
     protected static function serializeData(array $data): array
@@ -76,6 +86,7 @@ class DataHandler implements DataHandlerInterface
         if (!is_file(self::getFileName($dt))) {
             return [];
         }
+        $this->logger->info("Reading data from file " . self::getFileName($dt));
 
         return json_decode(file_get_contents(self::getFileName($dt)), true);
     }

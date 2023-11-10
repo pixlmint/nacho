@@ -2,6 +2,8 @@
 
 namespace Nacho\Helpers\Log;
 
+use DateTime;
+use DateTimeZone;
 use Psr\Log\LoggerInterface;
 use Stringable;
 
@@ -10,15 +12,17 @@ use Stringable;
  */
 class Logger implements LoggerInterface, NachoLoggerInterface
 {
-    private string $logFile;
-    private string $dateFormat;
     private LogWriterInterface $logWriter;
+    private string $logFormat;
+    private string $dateFormat;
+    private DateTimeZone $utc;
 
-    public function __construct(LogWriterInterface $logWriter)
+    public function __construct(LogWriterInterface $logWriter, string $logFormat, string $dateFormat = 'Y-m-d H:i:s')
     {
-        $this->logFile = $logFile;
-        $this->dateFormat = $dateFormat;
         $this->logWriter = $logWriter;
+        $this->logFormat = $logFormat;
+        $this->dateFormat = $dateFormat;
+        $this->utc = new DateTimeZone('UTC');
     }
 
     /**
@@ -29,7 +33,22 @@ class Logger implements LoggerInterface, NachoLoggerInterface
         if (!$level instanceof Level) {
             throw new \InvalidArgumentException('Invalid level');
         }
-        $this->logWriter->write($message, $level, implode(';', $context));
+
+        $date = new DateTime('now', $this->utc);
+        $message = $this->formatMessage($level, $date, $message, $context);
+
+        $this->logWriter->write($message);
+    }
+
+    private function formatMessage(Level $level, DateTime $dt, string $message, array $context = []): string
+    {
+        $formatted = $dt->format($this->dateFormat);
+        $logFormatKeys = ["{date}" => $formatted, "{level}" => $level->name, "{message}" => $message];
+        $logMessage = $this->logFormat;
+        foreach ($logFormatKeys as $key => $value) {
+            $logMessage = str_replace($key, $value, $logMessage);
+        }
+        return $logMessage;
     }
 
     /**

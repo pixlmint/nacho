@@ -17,7 +17,7 @@ interface LogWriterInterface
      *
      * @return void
      */
-    public function write(string $message, Level $level, string $context): void;
+    public function write(string $message): void;
 
     /**
      * Opens the connection to the log endpoint (file/ db)

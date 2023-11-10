@@ -6,6 +6,7 @@ use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Models\HttpRedirectResponse;
 use Nacho\Models\HttpResponse;
 use Nacho\Nacho;
+use Psr\Log\LoggerInterface;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\TwigFunction;
@@ -31,6 +32,11 @@ abstract class AbstractController
         }
 
         return $this->twig;
+    }
+
+    protected function getLogger(): LoggerInterface
+    {
+        return Nacho::$container->get(LoggerInterface::class);
     }
 
     protected function redirect(string $route, bool $isPermanent = false): HttpRedirectResponse

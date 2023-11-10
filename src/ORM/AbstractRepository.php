@@ -2,11 +2,22 @@
 
 namespace Nacho\ORM;
 
+use Nacho\Nacho;
+use Psr\Log\LoggerInterface;
+
 abstract class AbstractRepository
 {
     /** @var array|ModelInterface[] $data */
     private array $data = [];
     private bool $dataChanged = false;
+    protected LoggerInterface $logger;
+
+    public function __construct()
+    {
+        $this->logger = Nacho::$container->get(LoggerInterface::class);
+        $className = static::class;
+        $this->logger->info("Repository {$className} created");
+    }
 
     public function setData(array $data): void
     {
