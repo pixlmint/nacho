@@ -3,7 +3,6 @@
 namespace Nacho;
 
 use DI\Container;
-use DI\ContainerBuilder;
 use Nacho\Contracts\DataHandlerInterface;
 use Nacho\Contracts\NachoCoreInterface;
 use Nacho\Contracts\PageManagerInterface;
@@ -16,12 +15,15 @@ use Nacho\Helpers\ConfigurationContainer;
 use Nacho\Helpers\DataHandler;
 use Nacho\Helpers\FileHelper;
 use Nacho\Helpers\HookHandler;
+use Nacho\Helpers\Log\FileLogWriter;
+use Nacho\Helpers\Log\LogWriterInterface;
 use Nacho\Helpers\MetaHelper;
 use Nacho\Helpers\NachoContainerBuilder;
 use Nacho\Helpers\PageManager;
 use Nacho\Helpers\PageSecurityHelper;
 use Nacho\Helpers\RouteFinder;
 use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
+use Nacho\Hooks\NachoAnchors\PostFindRouteAnchor;
 use Nacho\Hooks\NachoAnchors\PreCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PrePrintResponseAnchor;
 use Nacho\Models\ContainerDefinitionsHolder;
@@ -30,7 +32,6 @@ use Nacho\Models\Request;
 use Nacho\ORM\RepositoryManager;
 use Nacho\ORM\RepositoryManagerInterface;
 use Nacho\Security\JsonUserHandler;
-use Nacho\Hooks\NachoAnchors\PostFindRouteAnchor;
 use Nacho\Security\UserRepository;
 use function DI\create;
 use function DI\factory;
@@ -175,6 +176,9 @@ class Nacho implements NachoCoreInterface
             RouteFinderInterface::class => create(RouteFinder::class),
             UserRepository::class => create(UserRepository::class),
             MetaHelper::class => create(MetaHelper::class),
+            LogWriterInterface::class => create(FileLogWriter::class)->constructor(
+                get('/var/log/nacho.log'),
+            ),
         ]);
     }
 }
