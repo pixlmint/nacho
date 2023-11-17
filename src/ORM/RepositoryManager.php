@@ -8,13 +8,22 @@ use Nacho\Nacho;
 
 class RepositoryManager implements RepositoryManagerInterface
 {
-    private DataHandler $dataHandler;
-    /** @var array|AbstractRepository[]|RepositoryInterface[] $repositories  */
+    private DataHandlerInterface $dataHandler;
+    /** @var array|AbstractRepository[]|RepositoryInterface[] $repositories */
     private array $repositories = [];
 
     public function __construct(DataHandlerInterface $dataHandler)
     {
         $this->dataHandler = $dataHandler;
+    }
+
+    public function trackRepository(RepositoryInterface $repository): void
+    {
+        if (!key_exists($repository::class, $this->repositories)) {
+            $this->repositories[$repository::class] = $repository;
+            $data = $this->dataHandler->readData($repository::getDataName());
+            $repository->setData($data);
+        }
     }
 
     public function getRepository(string $repositoryClass): RepositoryInterface
@@ -23,14 +32,7 @@ class RepositoryManager implements RepositoryManagerInterface
             return $this->repositories[$repositoryClass];
         }
 
-
-        /** @var RepositoryInterface $repo */
-        $repo = Nacho::$container->get($repositoryClass);
-        $data = $this->dataHandler->readData($repo::getDataName());
-        $repo->setData($data);
-        $this->repositories[$repositoryClass] = $repo;
-
-        return $repo;
+        return Nacho::$container->get($repositoryClass);
     }
 
     public function close(): void

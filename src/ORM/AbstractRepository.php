@@ -5,7 +5,7 @@ namespace Nacho\ORM;
 use Nacho\Nacho;
 use Psr\Log\LoggerInterface;
 
-abstract class AbstractRepository
+abstract class AbstractRepository implements RepositoryInterface
 {
     /** @var array|ModelInterface[] $data */
     private array $data = [];
@@ -15,6 +15,13 @@ abstract class AbstractRepository
     public function __construct()
     {
         $this->logger = Nacho::$container->get(LoggerInterface::class);
+        $this->init();
+    }
+
+    private function init(): void
+    {
+        $manager = Nacho::$container->get(RepositoryManagerInterface::class);
+        $manager->trackRepository($this);
         $className = static::class;
         $this->logger->info("Repository {$className} created");
     }
@@ -27,6 +34,15 @@ abstract class AbstractRepository
     public function set(ModelInterface $newData): void
     {
         $id = $newData->getId();
+        $trackedEntity = array_filter($this->data, function ($entity) use ($newData) {
+            return $entity === $newData;
+        });
+
+        if ($trackedEntity) {
+            $this->dataChanged = true;
+            return;
+        }
+
         if ($id < 0 || $id === null || !$id) {
             $this->data[] = $newData;
         } else {
