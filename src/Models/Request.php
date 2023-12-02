@@ -97,7 +97,9 @@ class Request implements RequestInterface
             if (is_array($value)) {
                 $arr[$key] = $this->filterArrayDeep($value);
             } else {
-                $arr[$key] = htmlspecialchars($value, ENT_NOQUOTES);
+                $value = str_replace('<script>', '&lt;script&gt;', $value);
+                $value = str_replace('</script>', '&lt;/script&gt;', $value);
+                $arr[$key] = $value;
             }
         }
         return $arr;
