@@ -10,6 +10,8 @@ class PicoMeta
     public string $security = '';
     public string $owner = '';
     public string $parentPath = '';
+    public string $dateCreated = '';
+    public string $dateUpdated = '';
 
     public function __construct(?array $data = [])
     {

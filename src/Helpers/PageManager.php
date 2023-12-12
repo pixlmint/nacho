@@ -141,6 +141,14 @@ class PageManager implements PageManagerInterface
         return true;
     }
 
+    /**
+     * @param string $url        the URL of the page to edit
+     * @param string $newContent the new content
+     * @param array  $newMeta    New metadata to be merged with the existing meta data
+     *
+     * @return bool True if the updated page was successfully stored
+     * @throws Exception If the page does not exist
+     */
     public function editPage(string $url, string $newContent, array $newMeta): bool
     {
         $page = $this->getPage($url);
@@ -153,6 +161,13 @@ class PageManager implements PageManagerInterface
         if (!$newMeta['owner']) {
             $newMeta['owner'] = $this->userHandler->getCurrentUser()->getUsername();
         }
+        // TODO: figure out why dateCreated and dateUpdated get removed
+        // Fallback for older entries that don't yet possess the dateCreated info
+        if ($newMeta['date'] && $newMeta['time']) {
+            $newMeta['dateCreated'] = $newMeta['date'] . ' ' . $newMeta['time'];
+            unset($newMeta['date'], $newMeta['time']);
+        }
+        $newMeta['dateUpdated'] = date('Y-m-d h:i:s');
 
         $newPage = $page->duplicate();
         if ($newContent) {
@@ -178,8 +193,8 @@ class PageManager implements PageManagerInterface
         $newPage->raw_content = 'Write Some Content';
         $meta = new PicoMeta();
         $meta->title = $title;
-        $meta->date = date('Y-m-d');
-        $meta->time = date('h:i:s');
+        $meta->dateCreated = date('Y-m-d h:i:s');
+        $meta->dateUpdated = date('Y-m-d h:i:s');
         $newPage->meta = $meta;
 
         $contentDir = self::getContentDir();

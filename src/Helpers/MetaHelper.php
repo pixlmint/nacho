@@ -6,7 +6,7 @@ use Symfony\Component\Yaml\Parser;
 
 class MetaHelper
 {
-    private $metaHeaders;
+    private array $metaHeaders = [];
     private ?Parser $yamlParser = null;
 
     public function parseFileMeta($rawContent, array $headers): array
@@ -33,6 +33,13 @@ class MetaHelper
                 }
             }
 
+            if (!empty($meta['dateCreated'])) {
+                $meta['dateCreated'] = static::prepareMetaDate($meta['dateCreated']);
+            }
+            if (!empty($meta['dateUpdated'])) {
+                $meta['dateUpdated'] = static::prepareMetaDate($meta['dateUpdated']);
+            }
+
             if (!empty($meta['date']) || !empty($meta['time'])) {
                 // workaround for issue #336
                 // Symfony YAML interprets ISO-8601 datetime strings and returns timestamps instead of the string
@@ -52,7 +59,7 @@ class MetaHelper
                 $meta['date'] = $meta['time'] = '';
             }
         } else {
-            // guarantee array key existance
+            // guarantee array key existence
             $meta = array_fill_keys($headers, '');
         }
 
@@ -61,15 +68,16 @@ class MetaHelper
 
     public function getMetaHeaders(): array
     {
-        if ($this->metaHeaders === null) {
+        if (!$this->metaHeaders) {
             $this->metaHeaders = array(
                 'Title' => 'title',
                 'Description' => 'description',
                 'Author' => 'author',
                 'Date' => 'date',
+                'DateCreated' => 'dateCreated',
+                'DateUpdated' => 'dateUpdated',
                 'Time' => 'time',
                 'Robots' => 'robots',
-                'Template' => 'template',
                 'Hidden' => 'hidden'
             );
         }
@@ -112,5 +120,14 @@ class MetaHelper
             $ret .= '  ';
         }
         return $ret;
+    }
+
+    private static function prepareMetaDate(string $dateToPrepare): string
+    {
+        $rawDateCreated = strtotime($dateToPrepare) ?: '';
+        if (is_int($rawDateCreated)) {
+            return date('Y-m-d H:i:s', $rawDateCreated);
+        }
+        return '';
     }
 }
