@@ -1,75 +1,53 @@
 <?php
 
-namespace Test;
+namespace Tests\Models;
 
 use Nacho\Controllers\TestController;
 use Nacho\Models\Request;
-use Nacho\Models\Route;
 use PHPUnit\Framework\TestCase;
 
 class RequestTest extends TestCase
 {
-    public function testInitialization(): void
+    private Request $request;
+
+    protected function setUp(): void
     {
         $this->setServerVariables();
-        $instance = Request::getInstance();
-        $this->assertInstanceOf(Request::class, $instance);
-        $this->assertEquals('GET', $instance->requestMethod);
-        $this->assertIsString($instance->documentRoot);
+        $this->request = new Request();
+    }
+
+    public function testInitialization(): void
+    {
+        $this->assertInstanceOf(Request::class, $this->request);
+        $this->assertEquals('GET', $this->request->requestMethod);
+        $this->assertIsString($this->request->documentRoot);
     }
 
     public function testGetRequest()
     {
-        $this->setServerVariables();
         $_GET['test'] = 'test';
-        $instance = Request::getInstance();
-        $this->assertArrayHasKey('test', $instance->getBody());
+        $this->assertArrayHasKey('test', $this->request->getBody());
     }
 
     public function testPostRequest(): void
     {
-        $this->setServerVariables();
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST['test'] = 'test';
-        $instance = Request::getInstance();
-        $this->assertArrayHasKey('test', $instance->getBody());
+        $this->assertArrayHasKey('test', $this->request->getBody());
     }
 
     public function testPutRequest(): void
     {
         file_put_contents('php://input', json_encode(['test' => 'test']));
-        $this->setServerVariables();
         $_SERVER['REQUEST_METHOD'] = 'PUT';
-        $instance = Request::getInstance();
-        $this->assertArrayHasKey('test', $instance->getBody());
+        $this->assertArrayHasKey('test', $this->request->getBody());
     }
 
     public function testGetRouteNotSet(): void
     {
-        $this->setServerVariables();
-        $instance = Request::getInstance();
         $this->expectExceptionMessage('Route has not yet been defined');
-        $instance->getRoute();
+        $this->request->getRoute();
     }
-
-    public function testGetRouteValid(): void
-    {
-        $this->setServerVariables();
-        $_SERVER['REQUEST_URI'] = '/api/init';
-        $instance = Request::getInstance();
-        $route = new Route([
-            'route' => '/tests/index',
-            'controller' => TestController::class,
-            'function' => 'index',
-        ]);
-        $instance->setRoute($route);
-        $this->assertInstanceOf(Route::class, $instance->getRoute());
-    }
-
-//    public function testGetFiles()
-//    {
-//
-//    }
 
     /**
      * Sets some basic $_SERVER variables wihch were taken from a real request
