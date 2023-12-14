@@ -33,6 +33,9 @@ class MetaHelper
                 }
             }
 
+            // workaround for issue #336
+            // Symfony YAML interprets ISO-8601 datetime strings and returns timestamps instead of the string
+            // this behavior conforms to the YAML standard, i.e. this is no bug of Symfony YAML
             if (!empty($meta['dateCreated'])) {
                 $meta['dateCreated'] = static::prepareMetaDate($meta['dateCreated']);
             }
@@ -41,9 +44,6 @@ class MetaHelper
             }
 
             if (!empty($meta['date']) || !empty($meta['time'])) {
-                // workaround for issue #336
-                // Symfony YAML interprets ISO-8601 datetime strings and returns timestamps instead of the string
-                // this behavior conforms to the YAML standard, i.e. this is no bug of Symfony YAML
                 if (is_int($meta['date'])) {
                     $meta['time'] = $meta['date'];
                     $meta['date'] = '';
@@ -55,8 +55,6 @@ class MetaHelper
                     $rawDateFormat = (date('H:i:s', $meta['time']) === '00:00:00') ? 'Y-m-d' : 'Y-m-d H:i:s';
                     $meta['date'] = date($rawDateFormat, $meta['time']);
                 }
-            } else {
-                $meta['date'] = $meta['time'] = '';
             }
         } else {
             // guarantee array key existence
@@ -73,10 +71,8 @@ class MetaHelper
                 'Title' => 'title',
                 'Description' => 'description',
                 'Author' => 'author',
-                'Date' => 'date',
                 'DateCreated' => 'dateCreated',
                 'DateUpdated' => 'dateUpdated',
-                'Time' => 'time',
                 'Robots' => 'robots',
                 'Hidden' => 'hidden'
             );
