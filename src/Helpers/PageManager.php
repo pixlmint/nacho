@@ -161,13 +161,12 @@ class PageManager implements PageManagerInterface
         if (!$newMeta['owner']) {
             $newMeta['owner'] = $this->userHandler->getCurrentUser()->getUsername();
         }
-        // TODO: figure out why dateCreated and dateUpdated get removed
         // Fallback for older entries that don't yet possess the dateCreated info
         if ($newMeta['date'] && $newMeta['time']) {
             $newMeta['dateCreated'] = $newMeta['date'] . ' ' . $newMeta['time'];
             unset($newMeta['date'], $newMeta['time']);
         }
-        $newMeta['dateUpdated'] = date('Y-m-d h:i:s');
+        $newMeta['dateUpdated'] = date('Y-m-d H:i:s');
 
         $newPage = $page->duplicate();
         if ($newContent) {
@@ -193,8 +192,8 @@ class PageManager implements PageManagerInterface
         $newPage->raw_content = 'Write Some Content';
         $meta = new PicoMeta();
         $meta->title = $title;
-        $meta->dateCreated = date('Y-m-d h:i:s');
-        $meta->dateUpdated = date('Y-m-d h:i:s');
+        $meta->dateCreated = date('Y-m-d H:i:s');
+        $meta->dateUpdated = date('Y-m-d H:i:s');
         $newPage->meta = $meta;
 
         $contentDir = self::getContentDir();
