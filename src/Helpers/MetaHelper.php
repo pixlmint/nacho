@@ -124,8 +124,8 @@ class MetaHelper
 
     private static function prepareMetaDate(string $dateToPrepare): string
     {
-        $rawDateCreated = strtotime($dateToPrepare) ?: '';
-        if (is_int($rawDateCreated)) {
+        $rawDateCreated = intval($dateToPrepare);
+        if ($rawDateCreated !== 0) {
             return date('Y-m-d H:i:s', $rawDateCreated);
         }
         return '';
