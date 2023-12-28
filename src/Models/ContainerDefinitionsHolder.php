@@ -18,7 +18,7 @@ class ContainerDefinitionsHolder
     public function addDefinition(string $key, mixed $value): self
     {
         if (key_exists($key, $this->definitions)) {
-            throw new Exception("Definition with key ${key} already exists");
+            throw new Exception("Definition with key {$key} already exists");
         }
         $this->setDefinition($key, $value);
         return $this;
