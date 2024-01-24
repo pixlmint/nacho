@@ -227,7 +227,7 @@ class PageManager implements PageManagerInterface
     public function readPages(): void
     {
         if (!self::rootPageExists()) {
-            self::createInitialPage();
+            self::createRootPage();
         }
         $contentDir = self::getContentDir();
 
@@ -302,13 +302,15 @@ class PageManager implements PageManagerInterface
      * @return void
      * @throws Exception if page could not be created
      */
-    public function createInitialPage(): void
+    public function createRootPage(): void
     {
         if (self::rootPageExists()) {
             return;
         }
 
-        $this->create('/', 'Home');
+        $rootFilePath = self::getContentDir() . '/index.md';
+        $fileContent = "---\ntitle: Home\n---\nWelcome Home";
+        file_put_contents($rootFilePath, $fileContent);
     }
 
     private static function rootPageExists(): bool
