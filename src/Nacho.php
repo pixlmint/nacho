@@ -156,6 +156,7 @@ class Nacho implements NachoCoreInterface
                 get(PageSecurityHelper::class),
                 get(FileHelper::class),
                 get(UserHandlerInterface::class),
+                get(LoggerInterface::class),
             ),
             RepositoryManagerInterface::class => create(RepositoryManager::class)->constructor(
                 get(DataHandlerInterface::class)
