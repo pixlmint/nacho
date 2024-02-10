@@ -5,11 +5,11 @@ namespace Nacho\Helpers;
 use Exception;
 use Nacho\Contracts\PageHandler;
 use Nacho\Contracts\PageManagerInterface;
-use Nacho\Contracts\SingletonInterface;
 use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Nacho;
 use Nacho\Models\PicoMeta;
 use Nacho\Models\PicoPage;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Exception\ParseException;
 
 class PageManager implements PageManagerInterface
@@ -30,14 +30,16 @@ class PageManager implements PageManagerInterface
     private PageSecurityHelper $pageSecurityHelper;
     private FileHelper $fileHelper;
     private UserHandlerInterface $userHandler;
+    private LoggerInterface $logger;
 
-    public function __construct(MetaHelper $metaHelper, PageSecurityHelper $pageSecurityHelper, FileHelper $fileHelper, UserHandlerInterface $userHandler)
+    public function __construct(MetaHelper $metaHelper, PageSecurityHelper $pageSecurityHelper, FileHelper $fileHelper, UserHandlerInterface $userHandler, LoggerInterface $logger)
     {
         $this->pages = [];
         $this->metaHelper = $metaHelper;
         $this->pageSecurityHelper = $pageSecurityHelper;
         $this->fileHelper = $fileHelper;
         $this->userHandler = $userHandler;
+        $this->logger = $logger;
     }
 
     public function getPages(): array
@@ -109,7 +111,9 @@ class PageManager implements PageManagerInterface
 
     public function renderPage(PicoPage $page): string
     {
-        return $this->getPageHandler($page)->renderPage();
+        $pageHandler = $this->getPageHandler($page);
+        $this->logger->debug(sprintf('Rendering page id %s with renderer %s', $page->id, get_class($pageHandler)));
+        return $pageHandler->renderPage();
     }
 
     private function getPageHandler(PicoPage $page): PageHandler
@@ -139,7 +143,10 @@ class PageManager implements PageManagerInterface
             $success = unlink($page->file);
         }
         if ($success) {
+            $this->logger->debug('Deleted page with id ' . $id);
             $this->readPages();
+        } else {
+            $this->logger->error(sprintf('Error deleting page with id %s', $id));
         }
 
         return $success;
@@ -181,7 +188,14 @@ class PageManager implements PageManagerInterface
         $handler = $this->getPageHandler($newPage);
         $newPage = $handler->handleUpdate($url, $newContent, $newMeta);
 
-        return $this->fileHelper->storePage($newPage);
+        $success = $this->fileHelper->storePage($newPage);
+        if ($success) {
+            $this->logger->debug('Edited page with id ' . $newPage->id);
+        } else {
+            $this->logger->error(sprintf('Error editing page with id %s at path %s', $newPage->id, $newPage->file));
+        }
+
+        return $success;
     }
 
     public function create(string $parentFolder, string $title, bool $isFolder = false): ?PicoPage
@@ -225,14 +239,18 @@ class PageManager implements PageManagerInterface
 
 
         if ($success) {
+            $this->logger->debug('Created Page with id ' . $newPage->id);
             $this->readPages();
             return $newPage;
         }
+
+        $this->logger->error(sprintf('Error creating Page with id %s at file %s' , $newPage->id, $newPage->file));
         return null;
     }
 
     public function readPages(): void
     {
+        $this->logger->info('Reading Pages');
         if (!self::rootPageExists()) {
             self::createRootPage();
         }
@@ -311,6 +329,7 @@ class PageManager implements PageManagerInterface
      */
     public function createRootPage(): void
     {
+        $this->logger->info('Creating root Page');
         if (self::rootPageExists()) {
             return;
         }
