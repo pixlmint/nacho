@@ -125,20 +125,24 @@ class PageManager implements PageManagerInterface
 
     public function delete(string $id): bool
     {
+        $success = true;
         $page = $this->getPage($id);
 
         if (!$page) {
-            return true;
+            return $success;
         }
 
         $handler = $this->getPageHandler($page);
         $handler->handleDelete();
 
         if (is_file($page->file)) {
-            return unlink($page->file);
+            $success = unlink($page->file);
+        }
+        if ($success) {
+            $this->readPages();
         }
 
-        return true;
+        return $success;
     }
 
     /**
@@ -219,8 +223,11 @@ class PageManager implements PageManagerInterface
 
         $success = $this->fileHelper->storePage($newPage);
 
-        if ($success)
+
+        if ($success) {
+            $this->readPages();
             return $newPage;
+        }
         return null;
     }
 
