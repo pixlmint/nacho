@@ -188,7 +188,7 @@ class PageManager implements PageManagerInterface
     {
         $page = $this->getPage($parentFolder);
 
-        if (!$page) {
+        if (!$page && $parentFolder !== '/') {
             throw new Exception('Unable to find this page');
         }
 
@@ -233,6 +233,9 @@ class PageManager implements PageManagerInterface
 
     public function readPages(): void
     {
+        if (!self::rootPageExists()) {
+            self::createRootPage();
+        }
         $contentDir = self::getContentDir();
 
         $this->pages = array();
@@ -298,6 +301,30 @@ class PageManager implements PageManagerInterface
                 throw new Exception('Unable to find root page');
             }
         }
+    }
+
+    /**
+     * Creates an index.md file in the [content_dir]/ directory.
+     * If that file already exists the method just exits.
+     * @return void
+     * @throws Exception if page could not be created
+     */
+    public function createRootPage(): void
+    {
+        if (self::rootPageExists()) {
+            return;
+        }
+
+        $rootFilePath = self::getContentDir() . '/index.md';
+        $fileContent = "---\ntitle: Home\n---\nWelcome Home";
+        file_put_contents($rootFilePath, $fileContent);
+    }
+
+    private static function rootPageExists(): bool
+    {
+        $rootFilePath = self::getContentDir() . '/index.md';
+
+        return file_exists($rootFilePath);
     }
 
     /**
