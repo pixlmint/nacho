@@ -47,6 +47,11 @@ class FileHelper
         return file_put_contents($filePath, $pageContent);
     }
 
+    public function move(string $source, string $target): bool
+    {
+        return rename($source, $target);
+    }
+
     public static function loadFileContent($file): string
     {
         return file_get_contents($file);

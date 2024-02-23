@@ -31,6 +31,7 @@ class PageManager implements PageManagerInterface
     private FileHelper $fileHelper;
     private UserHandlerInterface $userHandler;
     private LoggerInterface $logger;
+    private array $movedPages;
 
     public function __construct(MetaHelper $metaHelper, PageSecurityHelper $pageSecurityHelper, FileHelper $fileHelper, UserHandlerInterface $userHandler, LoggerInterface $logger)
     {
@@ -127,6 +128,30 @@ class PageManager implements PageManagerInterface
         return $pageHandler;
     }
 
+    public function move(string $id, string $targetFolder): bool
+    {
+        $page = $this->getPage($id);
+        $parent = $this->getPage($targetFolder);
+        $page->meta->parentPath = $targetFolder;
+        $this->editPage($id, $page->raw_content, (array) $page->meta);
+
+        $targetFolder = str_replace('/index.md', '', $parent->file);
+        $filenameSpl = explode('/', $page->file);
+        $filename = array_pop($filenameSpl);
+        $newPath = $targetFolder . '/' . $filename;
+
+        $success = $this->fileHelper->move($page->file, $newPath);
+
+        if (!$success) {
+            return false;
+        }
+
+        $this->movedPages[$id] = $targetFolder;
+
+        return true;
+    }
+
+    # TODO: This should use the FileHelper instead
     public function delete(string $id): bool
     {
         $success = true;

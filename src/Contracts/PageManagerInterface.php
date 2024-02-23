@@ -16,6 +16,8 @@ interface PageManagerInterface
 
     public function delete(string $id): bool;
 
+    public function move(string $id, string $targetFolder): bool;
+
     public function editPage(string $url, string $newContent, array $newMeta): bool;
 
     public function create(string $parentFolder, string $title, bool $isFolder = false): ?PicoPage;
