@@ -237,6 +237,7 @@ class PageManager implements PageManagerInterface
         $meta->title = $title;
         $meta->dateCreated = date('Y-m-d H:i:s');
         $meta->dateUpdated = date('Y-m-d H:i:s');
+        $meta->parentPath = $parentFolder;
         $newPage->meta = $meta;
 
         $contentDir = self::getContentDir();
