@@ -16,7 +16,7 @@ interface PageManagerInterface
 
     public function delete(string $id): bool;
 
-    public function move(string $id, string $targetFolder): bool;
+    public function move(string $id, string $targetFolder): ?string;
 
     public function editPage(string $url, string $newContent, array $newMeta): bool;
 

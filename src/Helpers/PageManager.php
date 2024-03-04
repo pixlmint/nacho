@@ -128,7 +128,10 @@ class PageManager implements PageManagerInterface
         return $pageHandler;
     }
 
-    public function move(string $id, string $targetFolder): bool
+    /**
+     * Returns null on error, or else the new entry id
+     */
+    public function move(string $id, string $targetFolder): ?string
     {
         $page = $this->getPage($id);
         $parent = $this->getPage($targetFolder);
@@ -143,12 +146,12 @@ class PageManager implements PageManagerInterface
         $success = $this->fileHelper->move($page->file, $newPath);
 
         if (!$success) {
-            return false;
+            return null;
         }
 
         $this->movedPages[$id] = $targetFolder;
 
-        return true;
+        return $newPath;
     }
 
     # TODO: This should use the FileHelper instead
@@ -295,12 +298,7 @@ class PageManager implements PageManagerInterface
                 continue;
             }
 
-            if (str_ends_with($id, '/index')) {
-                $id = substr($id, 0, -6);
-            }
-            if (!$id) {
-                $id = '/';
-            }
+            $id = self::parseId($id);
 
             $url = UrlHelper::getPageUrl($id);
             $rawMarkdown = FileHelper::loadFileContent($file);
@@ -345,6 +343,19 @@ class PageManager implements PageManagerInterface
                 throw new Exception('Unable to find root page');
             }
         }
+    }
+
+    private static function parseId(string $originalId): string
+    {
+        $id = '';
+        if (str_ends_with($originalId, '/index')) {
+            $id = substr($originalId, 0, -6);
+        }
+        if (!$id) {
+            $id = '/';
+        }
+
+        return $id;
     }
 
     /**
