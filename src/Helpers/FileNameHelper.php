@@ -10,7 +10,7 @@ class FileNameHelper
     {
         $title = trim($title);
         $title = substr($title, 0, 75);
-        return self::slugify($title) . '.md';
+        return self::slugify($title);
     }
 
     public static function slugify(string $text, string $divider = '-'): string

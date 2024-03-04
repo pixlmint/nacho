@@ -250,13 +250,13 @@ class PageManager implements PageManagerInterface
             $parentDir .= '/';
         }
         if ($isFolder) {
-            // TODO: Folder names that contain a space don't work
-            $directory = $contentDir . $parentDir . $title;
+            $newDirectory = FileNameHelper::generateFileNameFromTitle($title);
+            $directory = $contentDir . $parentDir . $newDirectory;
             mkdir($directory);
             $file = $directory . DIRECTORY_SEPARATOR . 'index.md';
             $newPage->id = $parentDir . $title;
         } else {
-            $fileName = FileNameHelper::generateFileNameFromTitle($title);
+            $fileName = FileNameHelper::generateFileNameFromTitle($title) . '.md';
             $file = $contentDir . $parentDir . $fileName;
             $fileName = preg_replace('/\.md$/', '', $fileName);
             $newPage->id = $parentDir . $fileName;
@@ -347,12 +347,13 @@ class PageManager implements PageManagerInterface
 
     private static function parseId(string $originalId): string
     {
-        $id = '';
         if (str_ends_with($originalId, '/index')) {
             $id = substr($originalId, 0, -6);
-        }
-        if (!$id) {
-            $id = '/';
+            if (!$id) {
+                $id = '/';
+            }
+        } else {
+            $id = $originalId;
         }
 
         return $id;
