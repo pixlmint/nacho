@@ -136,7 +136,7 @@ class PageManager implements PageManagerInterface
         $page = $this->getPage($id);
         $parent = $this->getPage($targetFolder);
         $page->meta->parentPath = $targetFolder;
-        $this->editPage($id, $page->raw_content, (array) $page->meta);
+        $this->editPage($id, $page->raw_content, (array)$page->meta);
 
         $targetFolder = str_replace('/index.md', '', $parent->file);
         $filenameSpl = explode('/', $page->file);
@@ -237,7 +237,7 @@ class PageManager implements PageManagerInterface
         $newPage = new PicoPage();
         $newPage->raw_content = 'Write Some Content';
         $meta = new PicoMeta();
-        $meta->title = $title;
+        $meta->title = '"' . $title . '"';
         $meta->dateCreated = date('Y-m-d H:i:s');
         $meta->dateUpdated = date('Y-m-d H:i:s');
         $meta->parentPath = $parentFolder;
@@ -256,7 +256,7 @@ class PageManager implements PageManagerInterface
             $file = $directory . DIRECTORY_SEPARATOR . 'index.md';
             $newPage->id = $parentDir . $title;
         } else {
-            $fileName = FileNameHelper::generateFileNameFromTitle($meta->title);
+            $fileName = FileNameHelper::generateFileNameFromTitle($title);
             $file = $contentDir . $parentDir . $fileName;
             $fileName = preg_replace('/\.md$/', '', $fileName);
             $newPage->id = $parentDir . $fileName;
@@ -273,7 +273,7 @@ class PageManager implements PageManagerInterface
             return $newPage;
         }
 
-        $this->logger->error(sprintf('Error creating Page with id %s at file %s' , $newPage->id, $newPage->file));
+        $this->logger->error(sprintf('Error creating Page with id %s at file %s', $newPage->id, $newPage->file));
         return null;
     }
 

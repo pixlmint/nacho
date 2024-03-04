@@ -8,6 +8,8 @@ class FileNameHelper
 {
     public static function generateFileNameFromTitle(string $title): string
     {
+        $title = trim($title);
+        $title = substr($title, 0, 75);
         return self::slugify($title) . '.md';
     }
 
