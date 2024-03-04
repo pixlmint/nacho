@@ -254,7 +254,7 @@ class PageManager implements PageManagerInterface
             $directory = $contentDir . $parentDir . $newDirectory;
             mkdir($directory);
             $file = $directory . DIRECTORY_SEPARATOR . 'index.md';
-            $newPage->id = $parentDir . $title;
+            $newPage->id = $parentDir . $newDirectory;
         } else {
             $fileName = FileNameHelper::generateFileNameFromTitle($title) . '.md';
             $file = $contentDir . $parentDir . $fileName;
