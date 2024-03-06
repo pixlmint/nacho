@@ -83,7 +83,7 @@ class MetaHelper
 
     public static function createMetaString(array $meta): string
     {
-	$meta = $this->escapeMetaYaml($meta);
+	$meta = static::escapeMetaYaml($meta);
         return "---" . self::implode_recursive($meta, "\n") . "\n---\n";
     }
 
@@ -96,7 +96,7 @@ class MetaHelper
         return $this->yamlParser;
     }
 
-    private function escapeMetaYaml(array $value): mixed 
+    private static function escapeMetaYaml(array $value): mixed 
     {
 	if (is_array($value)) {
             // Recursively handle array values
