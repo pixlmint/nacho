@@ -206,7 +206,7 @@ class PageManager implements PageManagerInterface
             unset($newMeta['date'], $newMeta['time']);
         }
         $newMeta['dateUpdated'] = date('Y-m-d H:i:s');
-
+	$newMeta = $this->escapeMetaYaml($newMeta);
         $newPage = $page->duplicate();
         if ($newContent) {
             $newPage->raw_content = $newContent;
@@ -226,6 +226,28 @@ class PageManager implements PageManagerInterface
         return $success;
     }
 
+    private function escapeMetaYaml(mixed $value): mixed 
+    {
+	if (is_array($value)) {
+            // Recursively handle array values
+            $escapedArray = array_map([$this, 'escapeYamlValue'], $value);
+            return $escapedArray;
+        } else {
+            // Convert value to string if not already
+            $stringValue = (string)$value;
+            // Check if the value needs to be quoted
+            if (preg_match('/[:\[\]{}#&*!|>\'"%@`]/', $stringValue) || is_numeric($stringValue) || in_array(strtolower($stringValue), ['true', 'false', 'null'])) {
+                // Use single quotes for strings containing special characters
+                // Escape single quotes inside the value
+                $escapedValue = "'" . str_replace("'", "''", $stringValue) . "'";
+            } else {
+                // Value does not need to be quoted
+                $escapedValue = $stringValue;
+            }
+            return $escapedValue;
+        }
+    }
+
     public function create(string $parentFolder, string $title, bool $isFolder = false): ?PicoPage
     {
         $page = $this->getPage($parentFolder);
@@ -237,10 +259,11 @@ class PageManager implements PageManagerInterface
         $newPage = new PicoPage();
         $newPage->raw_content = 'Write Some Content';
         $meta = new PicoMeta();
-        $meta->title = '"' . $title . '"';
+        $meta->title = $title;
         $meta->dateCreated = date('Y-m-d H:i:s');
         $meta->dateUpdated = date('Y-m-d H:i:s');
         $meta->parentPath = $parentFolder;
+	$meta = $this->escapeMetaYaml($meta);
         $newPage->meta = $meta;
 
         $contentDir = self::getContentDir();
