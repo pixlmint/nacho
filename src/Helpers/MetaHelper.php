@@ -100,7 +100,7 @@ class MetaHelper
     {
 	if (is_array($value)) {
             // Recursively handle array values
-            $escapedArray = array_map([$this, 'escapeYamlValue'], $value);
+            $escapedArray = array_map([static, 'escapeYamlValue'], $value);
             return $escapedArray;
         } else {
             // Convert value to string if not already
