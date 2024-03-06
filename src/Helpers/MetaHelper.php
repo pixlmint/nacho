@@ -96,9 +96,9 @@ class MetaHelper
         return $this->yamlParser;
     }
 
-    private static function escapeMetaYaml(mixed $value): mixed 
+    private static function escapeMetaYaml(mixed $value): array|string
     {
-	if (is_array($value)) {
+        if (is_array($value)) {
             // Recursively handle array values
             $escapedArray = array_map('self::escapeMetaYaml', $value);
             return $escapedArray;
@@ -106,7 +106,7 @@ class MetaHelper
             // Convert value to string if not already
             $stringValue = (string)$value;
             // Check if the value needs to be quoted
-            if (preg_match('/[:\[\]{}#&*!|>\'"%@`]/', $stringValue) || is_numeric($stringValue) || in_array(strtolower($stringValue), ['true', 'false', 'null'])) {
+            if (!is_null($value) && (preg_match('/[:\[\]{}#&*!|>\'"%@`]/', $stringValue) || is_numeric($stringValue) || in_array(strtolower($stringValue), ['true', 'false']))) {
                 // Use single quotes for strings containing special characters
                 // Escape single quotes inside the value
                 $escapedValue = "'" . str_replace("'", "''", $stringValue) . "'";
