@@ -96,7 +96,7 @@ class MetaHelper
         return $this->yamlParser;
     }
 
-    private static function escapeMetaYaml(array $value): mixed 
+    private static function escapeMetaYaml(mixed $value): mixed 
     {
 	if (is_array($value)) {
             // Recursively handle array values
