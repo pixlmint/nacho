@@ -83,6 +83,7 @@ class MetaHelper
 
     public static function createMetaString(array $meta): string
     {
+	$meta = $this->escapeMetaYaml($meta);
         return "---" . self::implode_recursive($meta, "\n") . "\n---\n";
     }
 
@@ -93,6 +94,28 @@ class MetaHelper
         }
 
         return $this->yamlParser;
+    }
+
+    private function escapeMetaYaml(array $value): mixed 
+    {
+	if (is_array($value)) {
+            // Recursively handle array values
+            $escapedArray = array_map([$this, 'escapeYamlValue'], $value);
+            return $escapedArray;
+        } else {
+            // Convert value to string if not already
+            $stringValue = (string)$value;
+            // Check if the value needs to be quoted
+            if (preg_match('/[:\[\]{}#&*!|>\'"%@`]/', $stringValue) || is_numeric($stringValue) || in_array(strtolower($stringValue), ['true', 'false', 'null'])) {
+                // Use single quotes for strings containing special characters
+                // Escape single quotes inside the value
+                $escapedValue = "'" . str_replace("'", "''", $stringValue) . "'";
+            } else {
+                // Value does not need to be quoted
+                $escapedValue = $stringValue;
+            }
+            return $escapedValue;
+        }
     }
 
     protected static function implode_recursive(array $arr, string $separator = '', int $depth = 0): string
