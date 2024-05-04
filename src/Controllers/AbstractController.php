@@ -54,8 +54,6 @@ abstract class AbstractController
 
     protected function render(string $file, array $args = []): HttpResponse
     {
-        $args['user'] = $_SESSION['user'];
-
         $content = $this->getTwig()->render($file, $args);
        
         return new HttpResponse($content);
