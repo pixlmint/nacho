@@ -44,7 +44,12 @@ class FileHelper
             return false;
         }
         $filePath = $page->file;
-        return file_put_contents($filePath, $pageContent);
+        return $this->storeFileContents($filePath, $pageContent);
+    }
+
+    public function storeFileContents(string $filePath, string $fileContent): false|int
+    {
+        return file_put_contents($filePath, $fileContent);
     }
 
     public function move(string $source, string $target): bool

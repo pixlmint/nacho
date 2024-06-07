@@ -2,7 +2,6 @@
 
 namespace Nacho\Hooks;
 
-use Exception;
 use Nacho\Nacho;
 
 abstract class AbstractAnchor
@@ -10,7 +9,7 @@ abstract class AbstractAnchor
     protected array $hooks = [];
     protected array $arguments = [];
     
-    public function addHook($hook): void
+    public function addHook(string $hook): void
     {
         $this->hooks[] = $hook;
     }
@@ -30,13 +29,15 @@ abstract class AbstractAnchor
 
     public function hasHooks(): bool
     {
-        return count($this->arguments) > 0;
+        return count($this->hooks) > 0;
     }
 
-    public function exec(mixed $hook): void
+    protected function addArgument(string $name, bool $isReturnValue): void
     {
-        throw new Exception('This anchor does\'t have it\'s exec function defined');
+        $this->arguments[] = new HookArgument($name, $isReturnValue);
     }
+
+    public abstract function exec(mixed $hook): void;
 
     private function populateArguments(array $args): void
     {

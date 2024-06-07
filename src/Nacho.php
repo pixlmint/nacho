@@ -27,6 +27,7 @@ use Nacho\Helpers\PageSecurityHelper;
 use Nacho\Helpers\RouteFinder;
 use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PostFindRouteAnchor;
+use Nacho\Hooks\NachoAnchors\PostHandleUpdateAnchor;
 use Nacho\Hooks\NachoAnchors\PreCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PrePrintResponseAnchor;
 use Nacho\Models\ContainerDefinitionsHolder;
@@ -64,6 +65,7 @@ class Nacho implements NachoCoreInterface
         $hookHandler->registerAnchor(PreCallActionAnchor::getName(), new PreCallActionAnchor());
         $hookHandler->registerAnchor(PostCallActionAnchor::getName(), new PostCallActionAnchor());
         $hookHandler->registerAnchor(PrePrintResponseAnchor::getName(), new PrePrintResponseAnchor());
+        $hookHandler->registerAnchor(PostHandleUpdateAnchor::getName(), new PostHandleUpdateAnchor());
     }
 
     public function getContainerBuilder(): NachoContainerBuilder

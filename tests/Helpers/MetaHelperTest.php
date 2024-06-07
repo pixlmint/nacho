@@ -70,7 +70,7 @@ class MetaHelperTest extends TestCase
                 'year' => '2023'
             ]
         ];
-        $expected = "---\ntitle: Test Title\ndetails: \n  author: Test Author\n  year: 2023\n---\n";
+        $expected = "---\ntitle: Test Title\ndetails: \n  author: Test Author\n  year: '2023'\n---\n";
 
         $this->assertEquals($expected, MetaHelper::createMetaString($meta));
     }

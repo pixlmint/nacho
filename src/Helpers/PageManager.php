@@ -6,6 +6,7 @@ use Exception;
 use Nacho\Contracts\PageHandler;
 use Nacho\Contracts\PageManagerInterface;
 use Nacho\Contracts\UserHandlerInterface;
+use Nacho\Hooks\NachoAnchors\PostHandleUpdateAnchor;
 use Nacho\Nacho;
 use Nacho\Models\PicoMeta;
 use Nacho\Models\PicoPage;
@@ -26,21 +27,25 @@ class PageManager implements PageManagerInterface
     /** @var array|PicoPage[] $pageTree */
     private array $pageTree = [];
 
-    private MetaHelper $metaHelper;
-    private PageSecurityHelper $pageSecurityHelper;
     private FileHelper $fileHelper;
     private UserHandlerInterface $userHandler;
     private LoggerInterface $logger;
+    private HookHandler $hookHandler;
     private array $movedPages;
+    private PageFinder $pageFinder;
+    private MarkdownPageHandler $markdownPageHandler;
+    private AlternativeContentPageHandler $alternativeContentPageHandler;
 
-    public function __construct(MetaHelper $metaHelper, PageSecurityHelper $pageSecurityHelper, FileHelper $fileHelper, UserHandlerInterface $userHandler, LoggerInterface $logger)
+    public function __construct(FileHelper $fileHelper, UserHandlerInterface $userHandler, LoggerInterface $logger, HookHandler $hookHandler, PageFinder $pageFinder, MarkdownPageHandler $markdownPageHandler, AlternativeContentPageHandler $alternativeContentPageHandler)
     {
         $this->pages = [];
-        $this->metaHelper = $metaHelper;
-        $this->pageSecurityHelper = $pageSecurityHelper;
         $this->fileHelper = $fileHelper;
         $this->userHandler = $userHandler;
         $this->logger = $logger;
+        $this->hookHandler = $hookHandler;
+        $this->pageFinder = $pageFinder;
+        $this->markdownPageHandler = $markdownPageHandler;
+        $this->alternativeContentPageHandler = $alternativeContentPageHandler;
     }
 
     public function getPages(): array
@@ -119,11 +124,8 @@ class PageManager implements PageManagerInterface
 
     private function getPageHandler(PicoPage $page): PageHandler
     {
-        if (isset($page->meta->renderer)) {
-            $pageHandler = Nacho::$container->get(AlternativeContentPageHandler::class);
-        } else {
-            $pageHandler = Nacho::$container->get(MarkdownPageHandler::class);
-        }
+        $pageHandler = isset($page->meta->renderer) ? $this->alternativeContentPageHandler : $this->markdownPageHandler;
+
         $pageHandler->setPage($page);
         return $pageHandler;
     }
@@ -151,6 +153,8 @@ class PageManager implements PageManagerInterface
 
         $this->movedPages[$id] = $targetFolder;
 
+        $this->hookHandler->executeHook(PostHandleUpdateAnchor::getName(), ['entry' => $page]);
+
         return $newPath;
     }
 
@@ -177,6 +181,8 @@ class PageManager implements PageManagerInterface
             $this->logger->error(sprintf('Error deleting page with id %s', $id));
         }
 
+        $this->hookHandler->executeHook(PostHandleUpdateAnchor::getName(), ['entry' => $page]);
+
         return $success;
     }
 
@@ -197,11 +203,11 @@ class PageManager implements PageManagerInterface
         $oldMeta = (array)$page->meta;
         $newMeta = array_merge($oldMeta, $newMeta);
         // Fallback for older entries that don't yet possess the owner info
-        if (!$newMeta['owner']) {
+        if (!key_exists('owner', $newMeta) || !$newMeta['owner']) {
             $newMeta['owner'] = $this->userHandler->getCurrentUser()->getUsername();
         }
         // Fallback for older entries that don't yet possess the dateCreated info
-        if ($newMeta['date'] && $newMeta['time']) {
+        if (key_exists('date', $newMeta) && key_exists('time', $newMeta)) {
             $newMeta['dateCreated'] = $newMeta['date'] . ' ' . $newMeta['time'];
             unset($newMeta['date'], $newMeta['time']);
         }
@@ -221,6 +227,8 @@ class PageManager implements PageManagerInterface
         } else {
             $this->logger->error(sprintf('Error editing page with id %s at path %s', $newPage->id, $newPage->file));
         }
+
+        $this->hookHandler->executeHook(PostHandleUpdateAnchor::getName(), ['entry' => $page]);
 
         return $success;
     }
@@ -265,6 +273,7 @@ class PageManager implements PageManagerInterface
 
         $success = $this->fileHelper->storePage($newPage);
 
+        $this->hookHandler->executeHook(PostHandleUpdateAnchor::getName(), ['entry' => $page]);
 
         if ($success) {
             $this->logger->debug('Created Page with id ' . $newPage->id);
@@ -278,84 +287,21 @@ class PageManager implements PageManagerInterface
 
     public function readPages(): void
     {
-        $this->logger->info('Reading Pages');
         if (!self::rootPageExists()) {
-            self::createRootPage();
+            $this->createRootPage();
         }
-        $contentDir = self::getContentDir();
+        $this->pages = $this->pageFinder->readPages(self::getContentDir());
 
-        $this->pages = array();
-        $files = $this->fileHelper->getFiles($contentDir);
-        foreach ($files as $i => $file) {
-            $id = substr($file, strlen($contentDir), -3);
-
-            // skip inaccessible pages (e.g. drop "sub.md" if "sub/index.md" exists) by default
-            $conflictFile = $contentDir . $id . '/index.md';
-            $skipFile = in_array($conflictFile, $files, true) || null;
-
-            if ($skipFile) {
-                continue;
-            }
-
-            $id = self::parseId($id);
-
-            $url = UrlHelper::getPageUrl($id);
-            $rawMarkdown = FileHelper::loadFileContent($file);
-            $rawContent = $this->prepareFileContent($rawMarkdown);
-
-            $headers = $this->metaHelper->getMetaHeaders();
-            try {
-                $meta = $this->metaHelper->parseFileMeta($rawMarkdown, $headers);
-            } catch (ParseException $e) {
-                $meta = $this->metaHelper->parseFileMeta('', $headers);
-                $meta['YAML_ParseError'] = $e->getMessage();
-            }
-
-            // build page data
-            $page = new PicoPage();
-            $page->id = $id;
-            $page->url = $url;
-            $page->hidden = ($meta['hidden'] || preg_match('/(?:^|\/)_/', $id));
-            $page->raw_content = $rawContent;
-            $page->raw_markdown = $rawMarkdown;
-            $picoMeta = new PicoMeta($meta);
-            $page->meta = $picoMeta;
-            $page->file = $file;
-            $parentPath = explode('/', $id);
-            array_pop($parentPath);
-            $page->meta->parentPath = implode('/', $parentPath);
-
-            unset($rawContent, $rawMarkdown, $meta);
-
-            if ($this->pageSecurityHelper->isPageShowingForCurrentUser($page)) {
-                $this->pages[$id] = $page;
-            }
-        }
         if (self::$INCLUDE_PAGE_TREE) {
-            $this->pageTree = [];
             self::$INCLUDE_PAGE_TREE = false;
             $rootPage = $this->getPage('/');
             self::$INCLUDE_PAGE_TREE = true;
             if ($rootPage) {
-                $this->pageTree = ['/' => $this->findChildPages('/', $rootPage, $this->pages)];
+                $this->pageTree = ['/' => $this->pageFinder->findChildPages('/', $rootPage, $this->pages)];
             } else {
                 throw new Exception('Unable to find root page');
             }
         }
-    }
-
-    private static function parseId(string $originalId): string
-    {
-        if (str_ends_with($originalId, '/index')) {
-            $id = substr($originalId, 0, -6);
-            if (!$id) {
-                $id = '/';
-            }
-        } else {
-            $id = $originalId;
-        }
-
-        return $id;
     }
 
     /**
@@ -373,7 +319,7 @@ class PageManager implements PageManagerInterface
 
         $rootFilePath = self::getContentDir() . '/index.md';
         $fileContent = "---\ntitle: Home\n---\nWelcome Home";
-        file_put_contents($rootFilePath, $fileContent);
+        $this->fileHelper->storeFileContents($rootFilePath, $fileContent);
     }
 
     private static function rootPageExists(): bool
@@ -399,46 +345,5 @@ class PageManager implements PageManagerInterface
     public static function getContentDir(): string
     {
         return $_SERVER['DOCUMENT_ROOT'] . '/content';
-    }
-
-    /**
-     * Return if the given path is a subpath of the given parent path(s)
-     */
-    public static function isSubPath(string $path, string $parentPath): bool
-    {
-        return str_starts_with($path, $parentPath) && $path !== $parentPath;
-    }
-
-    private static function isDirectChild(string $path, string $parentPath): bool
-    {
-        if (!self::isSubPath($path, $parentPath)) {
-            return false;
-        }
-
-        if ($parentPath === '/') {
-            if (count(explode('/', $path)) === 2) {
-                return true;
-            }
-            return false;
-        }
-
-        return count(explode('/', $path)) - 1 === count(explode('/', $parentPath));
-    }
-
-    public function findChildPages(string $id, PicoPage &$parentPage, array $pages): PicoPage
-    {
-        foreach ($pages as $childId => $page) {
-            if (isset($page->meta->min_role)) {
-                if (!$this->pageSecurityHelper->isPageShowingForCurrentUser($page)) {
-                    continue;
-                }
-            }
-            if (self::isDirectChild($childId, $id)) {
-                $page = $this->findChildPages($childId, $page, $pages);
-                $parentPage->children[$childId] = $page;
-            }
-        }
-
-        return $parentPage;
     }
 }

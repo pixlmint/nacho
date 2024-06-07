@@ -27,9 +27,4 @@ interface PageManagerInterface
     public static function prepareFileContent(string $rawContent): string|array|null;
 
     public static function getContentDir(): string;
-
-    public static function isSubPath(string $path, string $parentPath): bool;
-
-    public function findChildPages(string $id, PicoPage &$parentPage, array $pages): PicoPage;
-
 }
