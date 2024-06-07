@@ -2,6 +2,7 @@
 
 namespace Nacho\Helpers;
 
+use Nacho\Models\ParameterBag;
 use Symfony\Component\Yaml\Parser;
 
 class MetaHelper
@@ -98,9 +99,15 @@ class MetaHelper
 
     private static function escapeMetaYaml(mixed $value): array|string
     {
-        if (is_array($value)) {
+        if ($value instanceof ParameterBag) {
+            $arr = [];
+            foreach ($value->keys() as $key) {
+                $arr[$key] = $value->get($key);
+            }
+            return self::escapeMetaYaml($arr);
+        } else if (is_array($value)) {
             // Recursively handle array values
-            $escapedArray = array_map('self::escapeMetaYaml', $value);
+            $escapedArray = array_map(self::escapeMetaYaml(...), $value);
             return $escapedArray;
         } else {
             // Convert value to string if not already

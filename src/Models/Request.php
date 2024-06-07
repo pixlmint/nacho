@@ -11,12 +11,14 @@ class Request implements RequestInterface
 {
     public string $requestMethod;
     public ?string $contentType;
-    public array $headers;
-    public array $body = [];
+    public ParameterBag $headers;
+    public ParameterBag $body;
+    public ParameterBag $server;
     protected ?Route $route = null;
 
     function __construct()
     {
+        $this->server = new ParameterBag($_SERVER);
         $this->bootstrapSelf();
     }
 
@@ -36,27 +38,10 @@ class Request implements RequestInterface
 
     private function bootstrapSelf(): void
     {
-        foreach ($_SERVER as $key => $value) {
-            $this->{$this->toCamelCase($key)} = $value;
-        }
         $this->requestMethod = ServerVarsParser::getRequestMethod();
         $this->contentType = ServerVarsParser::getContentType();
-        $this->body = [];
-        $this->headers = ServerVarsParser::parseHeaders();
-    }
-
-    private function toCamelCase($string): array|string
-    {
-        $result = strtolower($string);
-
-        preg_match_all('/_[a-z]/', $result, $matches);
-
-        foreach ($matches[0] as $match) {
-            $c = str_replace('_', '', strtoupper($match));
-            $result = str_replace($match, $c, $result);
-        }
-
-        return $result;
+        $this->headers = new ParameterBag(ServerVarsParser::parseHeaders());
+        $this->body = new ParameterBag();
     }
 
     public function getFiles(): array
@@ -64,17 +49,22 @@ class Request implements RequestInterface
         return $_FILES;
     }
 
-    public function getBody(): array
+    public function isMethod(string $method): bool
     {
-        if ($this->body) {
+        return strtoupper($this->requestMethod) === strtoupper($method);
+    }
+
+    public function getBody(): ParameterBag
+    {
+        if ($this->body->count()) {
             return $this->body;
         }
         $unsafe = [];
-        if ($this->requestMethod === HttpMethod::GET) {
+        if ($this->isMethod(HttpMethod::GET)) {
             $unsafe = $_GET;
         }
 
-        if ($this->requestMethod === HttpMethod::POST) {
+        if ($this->isMethod(HttpMethod::POST)) {
             $unsafe = $_POST;
         }
 
@@ -86,7 +76,8 @@ class Request implements RequestInterface
                 parse_str($requestContent, $unsafe);
             }
         }
-        $this->body = $this->filterArrayDeep($unsafe);
+        unset($this->body);
+        $this->body = new ParameterBag($this->filterArrayDeep($unsafe));
 
         return $this->body;
     }

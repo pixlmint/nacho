@@ -30,7 +30,7 @@ class PicoVersioningHelper
 
     public function hasValidUpdateTime(RequestInterface $request): bool
     {
-        $lastUpdateValue = self::convertDateValue($request->getBody()['lastUpdate']);
+        $lastUpdateValue = self::convertDateValue($request->getBody()->get('lastUpdate'));
 
         try {
             new DateTime($lastUpdateValue);

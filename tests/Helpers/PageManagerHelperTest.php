@@ -19,8 +19,6 @@ use Psr\Log\LoggerInterface;
 
 class PageManagerHelperTest extends TestCase
 {
-    private MetaHelper $metaHelper;
-    private PageSecurityHelper $pageSecurityHelper;
     private FileHelper $fileHelper;
     private UserHandlerInterface $userHandler;
     private LoggerInterface $logger;
@@ -36,7 +34,7 @@ class PageManagerHelperTest extends TestCase
     {
         $this->metaHelper = $this->createMock(MetaHelper::class);
         $this->pageSecurityHelper = $this->createMock(PageSecurityHelper::class);
-        $this->fileHelper = $this->createMock(FileHelper::class);
+        $this->fileHelper = $this->createStub(FileHelper::class);
         $this->userHandler = $this->createMock(UserHandlerInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->hookHandler = $this->createMock(HookHandler::class);
@@ -60,6 +58,6 @@ class PageManagerHelperTest extends TestCase
             ->method('executeHook')
             ->with($this->equalTo('post_handle_update'));
 
-        $this->pageManager->editPage($mockId, '', []);
+        $this->pageManager->create($mockId, 'hello tests');
     }
 }

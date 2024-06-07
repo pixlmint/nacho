@@ -13,6 +13,7 @@ class ConfigurationContainer
     private array $orm = [];
     private array $security = [];
     private array $alternativeContentHandlers = [];
+    private array $additionalConfigs = [];
 
     public function init(array $config = []): void
     {
@@ -25,7 +26,11 @@ class ConfigurationContainer
     public function bootstrapConfig(string $configName): void
     {
         if (key_exists($configName, $this->config)) {
-            $this->$configName = $this->config[$configName];
+            if (property_exists($this, $configName)) {
+                $this->$configName = $this->config[$configName];
+            } else {
+                $this->additionalConfigs[$configName] = $this->config[$configName];
+            }
         }
     }
 
@@ -56,10 +61,13 @@ class ConfigurationContainer
 
     public function getCustomConfig(string $configName): array
     {
-        if (!isset($this->$configName)) {
-            throw new ConfigurationDoesNotExistException($configName);
+        if (property_exists($this, $configName)) {
+            return $this->$configName;
+        }
+        if (key_exists($configName, $this->additionalConfigs)) {
+            return $this->additionalConfigs[$configName];
         }
 
-        return $this->$configName;
+        throw new ConfigurationDoesNotExistException($configName);
     }
 }

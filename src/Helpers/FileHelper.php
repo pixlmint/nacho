@@ -39,7 +39,7 @@ class FileHelper
      */
     public function storePage(PicoPage $page): bool
     {
-        $pageContent = MetaHelper::createMetaString((array)$page->meta) . $page->raw_content;
+        $pageContent = MetaHelper::createMetaString($page->meta->toArray()) . $page->raw_content;
         if (!$pageContent || !$page->id || !$page->file) {
             return false;
         }

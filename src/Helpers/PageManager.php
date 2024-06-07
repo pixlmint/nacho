@@ -124,7 +124,7 @@ class PageManager implements PageManagerInterface
 
     private function getPageHandler(PicoPage $page): PageHandler
     {
-        $pageHandler = isset($page->meta->renderer) ? $this->alternativeContentPageHandler : $this->markdownPageHandler;
+        $pageHandler = $page->meta->renderer !== null ? $this->alternativeContentPageHandler : $this->markdownPageHandler;
 
         $pageHandler->setPage($page);
         return $pageHandler;
@@ -138,7 +138,7 @@ class PageManager implements PageManagerInterface
         $page = $this->getPage($id);
         $parent = $this->getPage($targetFolder);
         $page->meta->parentPath = $targetFolder;
-        $this->editPage($id, $page->raw_content, (array)$page->meta);
+        $this->editPage($id, $page->raw_content, $page->meta->toArray());
 
         $targetFolder = str_replace('/index.md', '', $parent->file);
         $filenameSpl = explode('/', $page->file);
@@ -200,7 +200,7 @@ class PageManager implements PageManagerInterface
         if (!$page) {
             throw new Exception("{$url} does not exist");
         }
-        $oldMeta = (array)$page->meta;
+        $oldMeta = $page->meta->toArray();
         $newMeta = array_merge($oldMeta, $newMeta);
         // Fallback for older entries that don't yet possess the owner info
         if (!key_exists('owner', $newMeta) || !$newMeta['owner']) {
@@ -227,8 +227,6 @@ class PageManager implements PageManagerInterface
         } else {
             $this->logger->error(sprintf('Error editing page with id %s at path %s', $newPage->id, $newPage->file));
         }
-
-        $this->hookHandler->executeHook(PostHandleUpdateAnchor::getName(), ['entry' => $page]);
 
         return $success;
     }

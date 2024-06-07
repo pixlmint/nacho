@@ -10,6 +10,9 @@ class RouteFinder implements RouteFinderInterface
 {
     public function getRoute(string $path): Route
     {
+        if ($path === "") {
+            $path = "/";
+        }
         $route = $this->findRoute($path);
         
         if (!$route) {

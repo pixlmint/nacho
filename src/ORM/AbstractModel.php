@@ -20,13 +20,22 @@ abstract class AbstractModel implements ArrayableInterface
 
     public static function init(TemporaryModel $data, int $id): ModelInterface
     {
-        $keys = array_keys(get_class_vars(static::class));
         $str = static::class;
         $obj = new $str();
+        $keys = array_keys($obj->toArray());
         foreach ($keys as $key) {
-            $obj->$key = $data->get($key);
-            $obj->setId($id);
+            $val = $data->get($key);
+            if ($val instanceof TemporaryModel) {
+                $val = $val->asArray();
+            }
+            if (property_exists($obj, $key)) {
+                $obj->$key = $val;
+            } elseif (method_exists($obj, 'set' . ucfirst($key))) {
+                $setter = 'set' . ucfirst($key);
+                $obj->$setter($val);
+            }
         }
+        $obj->setId($id);
 
         return $obj;
     }

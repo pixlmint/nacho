@@ -2,7 +2,6 @@
 
 namespace Tests\Models;
 
-use Nacho\Controllers\TestController;
 use Nacho\Models\Request;
 use PHPUnit\Framework\TestCase;
 
@@ -20,27 +19,26 @@ class RequestTest extends TestCase
     {
         $this->assertInstanceOf(Request::class, $this->request);
         $this->assertEquals('GET', $this->request->requestMethod);
-        $this->assertIsString($this->request->documentRoot);
     }
 
     public function testGetRequest()
     {
         $_GET['test'] = 'test';
-        $this->assertArrayHasKey('test', $this->request->getBody());
+        $this->assertContains('test', $this->request->getBody()->keys());
     }
 
     public function testPostRequest(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_POST['test'] = 'test';
-        $this->assertArrayHasKey('test', $this->request->getBody());
+        $this->assertContains('test', $this->request->getBody()->keys());
     }
 
     public function testPutRequest(): void
     {
         file_put_contents('php://input', json_encode(['test' => 'test']));
         $_SERVER['REQUEST_METHOD'] = 'PUT';
-        $this->assertArrayHasKey('test', $this->request->getBody());
+        $this->assertContains('test', $this->request->getBody()->keys());
     }
 
     public function testGetRouteNotSet(): void

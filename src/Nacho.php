@@ -13,6 +13,7 @@ use Nacho\Contracts\Response;
 use Nacho\Contracts\RouteFinderInterface;
 use Nacho\Contracts\RouteInterface;
 use Nacho\Contracts\UserHandlerInterface;
+use Nacho\Helpers\AlternativeContentPageHandler;
 use Nacho\Helpers\ConfigurationContainer;
 use Nacho\Helpers\DataHandler;
 use Nacho\Helpers\FileHelper;
@@ -20,10 +21,11 @@ use Nacho\Helpers\HookHandler;
 use Nacho\Helpers\Log\FileLogWriter;
 use Nacho\Helpers\Log\Logger;
 use Nacho\Helpers\Log\LogWriterInterface;
+use Nacho\Helpers\MarkdownPageHandler;
 use Nacho\Helpers\MetaHelper;
 use Nacho\Helpers\NachoContainerBuilder;
+use Nacho\Helpers\PageFinder;
 use Nacho\Helpers\PageManager;
-use Nacho\Helpers\PageSecurityHelper;
 use Nacho\Helpers\RouteFinder;
 use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PostFindRouteAnchor;
@@ -154,11 +156,13 @@ class Nacho implements NachoCoreInterface
             DataHandlerInterface::class => create(DataHandler::class),
             UserHandlerInterface::class => create(JsonUserHandler::class),
             PageManagerInterface::class => create(PageManager::class)->constructor(
-                get(MetaHelper::class),
-                get(PageSecurityHelper::class),
                 get(FileHelper::class),
                 get(UserHandlerInterface::class),
                 get(LoggerInterface::class),
+                get(HookHandler::class),
+                get(PageFinder::class),
+                get(MarkdownPageHandler::class),
+                get(AlternativeContentPageHandler::class),
             ),
             RepositoryManagerInterface::class => create(RepositoryManager::class)->constructor(
                 get(DataHandlerInterface::class)
@@ -167,12 +171,7 @@ class Nacho implements NachoCoreInterface
                 $finder = $c->get(RouteFinderInterface::class);
                 return $finder->getRoute($c->get('path'));
             }),
-            RequestInterface::class => factory(function (Container $c) {
-                $request = $c->get(Request::class);
-                $route = $c->get(RouteInterface::class);
-                $request->setRoute($route);
-                return $request;
-            }),
+            RequestInterface::class => create(Request::class),
             ConfigurationContainer::class => create(ConfigurationContainer::class),
             RouteFinderInterface::class => create(RouteFinder::class),
             UserRepository::class => create(UserRepository::class),

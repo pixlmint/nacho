@@ -2,7 +2,9 @@
 
 namespace Nacho\Models;
 
-class PicoPage
+use Nacho\Contracts\ArrayableInterface;
+
+class PicoPage implements ArrayableInterface
 {
     public string $id = '';
     public string $url = '';
@@ -44,6 +46,22 @@ class PicoPage
 
     public function duplicate(): PicoPage
     {
-        return new PicoPage((array) $this);
+        $clone = new PicoPage((array)$this);
+        $clone->meta = new PicoMeta($this->meta->toArray());
+        return $clone;
+    }
+
+    public function toArray(): array
+    {
+        $ret = [];
+        foreach (get_object_vars($this) as $key => $var) {
+            if ($var instanceof ArrayableInterface) {
+                $ret[$key] = $var->toArray();
+            } else {
+                $ret[$key] = $var;
+            }
+        }
+
+        return $ret;
     }
 }
