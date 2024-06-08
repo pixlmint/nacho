@@ -86,7 +86,7 @@ class AlternativeContentPageHandler implements PageHandler
         return $uploadedFile;
     }
 
-    private function getAbsoluteFilePath(): string
+    public function getAbsoluteFilePath(): string
     {
         return PageManager::getContentDir() . $this->page->meta->parentPath . DIRECTORY_SEPARATOR . $this->page->meta->alternative_content;
     }
