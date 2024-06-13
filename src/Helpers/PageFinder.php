@@ -129,6 +129,26 @@ class PageFinder
             }
         }
 
+        if (!is_null($parentPage->children)) {
+            usort($parentPage->children, function (PicoPage $a, PicoPage $b) {
+                if (self::isDirectory($a)) {
+                    if (self::isDirectory($b)) {
+                        return strcmp($a->meta->title, $b->meta->title);
+                    } else {
+                        return -1;
+                    }
+                }
+                if (self::isDirectory($b)) {
+                    return 1;
+                }
+                return strcmp($a->meta->title, $b->meta->title);
+            });
+        }
+
         return $parentPage;
+    }
+
+    private static function isDirectory(PicoPage $page): bool {
+        return !isset($page->meta->kind) && str_ends_with($page->file, 'index.md');
     }
 }
