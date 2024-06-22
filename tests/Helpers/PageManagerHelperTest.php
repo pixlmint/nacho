@@ -32,8 +32,6 @@ class PageManagerHelperTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->metaHelper = $this->createMock(MetaHelper::class);
-        $this->pageSecurityHelper = $this->createMock(PageSecurityHelper::class);
         $this->fileHelper = $this->createStub(FileHelper::class);
         $this->userHandler = $this->createMock(UserHandlerInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
