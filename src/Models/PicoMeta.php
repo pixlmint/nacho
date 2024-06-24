@@ -39,6 +39,11 @@ class PicoMeta implements ArrayableInterface
         $this->additionalValues->set($key, $value);
     }
 
+    public function getAdditionalValues(): ParameterBag
+    {
+        return $this->additionalValues;
+    }
+
     public function toArray(): array
     {
         $ret = [];

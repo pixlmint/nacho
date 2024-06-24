@@ -43,25 +43,35 @@ abstract class AbstractRepository implements RepositoryInterface
             return;
         }
 
-        if ($id < 0 || $id === null || !$id) {
+        if ($id < 0 || !$id) {
             $this->data[] = $newData;
         } else {
-            $this->data[$newData->getId()] = $newData;
+            if (key_exists($newData->getId(), $this->data)) {
+                $this->data[] = $newData;
+            } else {
+                $this->data[$newData->getId()] = $newData;
+            }
         }
         $this->dataChanged = true;
+    }
+
+    public function setInitialized(int $id, ModelInterface $data): void
+    {
+        if (!key_exists($id, $this->data)) {
+            throw new \Exception('Unknown Element with id ' . $id);
+        }
+        $this->data[$id] = $data;
     }
 
     public function initialiseObject(int $id): ModelInterface
     {
         $model = static::getModel();
         $obj = $model::init(new TemporaryModel($this->data[$id]), $id);
+        $this->data[$id] = $obj;
         return $obj;
     }
 
-    protected static function getModel(): string
-    {
-        return '';
-    }
+    protected abstract static function getModel(): string;
 
     public function getData(): array
     {
@@ -84,5 +94,14 @@ abstract class AbstractRepository implements RepositoryInterface
         }
 
         return $this->data[$id];
+    }
+
+    public function count(): int
+    {
+        $filtered = array_filter($this->data, function ($el) {
+            return $el instanceof ModelInterface || is_array($el);
+        });
+
+        return count($filtered);
     }
 }

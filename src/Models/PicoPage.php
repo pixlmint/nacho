@@ -57,6 +57,11 @@ class PicoPage implements ArrayableInterface
         foreach (get_object_vars($this) as $key => $var) {
             if ($var instanceof ArrayableInterface) {
                 $ret[$key] = $var->toArray();
+            } elseif ($key === 'children' && is_array($var)) {
+                $ret['children'] = [];
+                foreach ($var as $child) {
+                    $ret['children'][] = $child->toArray();
+                }
             } else {
                 $ret[$key] = $var;
             }
