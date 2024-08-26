@@ -64,9 +64,11 @@ class AlternativeContentPageHandler implements PageHandler
 
     public function renderPage(): string
     {
-        $pdfContent = file_get_contents($this->getAbsoluteFilePath());
+        // $pdfContent = file_get_contents($this->getAbsoluteFilePath());
 
-        return base64_encode($pdfContent);
+        // return base64_encode($pdfContent);
+        
+        return 'rendered content here';
     }
 
     private function getUploadedFile(): array
