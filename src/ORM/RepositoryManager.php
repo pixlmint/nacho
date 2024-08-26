@@ -19,8 +19,9 @@ class RepositoryManager implements RepositoryManagerInterface
 
     public function trackRepository(RepositoryInterface $repository): void
     {
-        if (!key_exists($repository::class, $this->repositories)) {
-            $this->repositories[$repository::class] = $repository;
+        $className = get_class($repository);
+        if (!key_exists($className, $this->repositories)) {
+            $this->repositories[$className] = $repository;
             $data = $this->dataHandler->readData($repository::getDataName());
             $repository->setData($data);
         }

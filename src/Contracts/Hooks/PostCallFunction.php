@@ -4,5 +4,5 @@ namespace Nacho\Contracts\Hooks;
 
 interface PostCallFunction
 {
-    public function call(mixed $returnedResponse): mixed;
+    public function call($returnedResponse);
 }

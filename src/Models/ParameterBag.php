@@ -16,12 +16,12 @@ class ParameterBag implements ArrayAccess
         $this->values = $values;
     }
 
-    public function set(mixed $key, mixed $value): void
+    public function set($key, $value): void
     {
         $this->values[$key] = $value;
     }
 
-    public function get(mixed $key): mixed
+    public function get($key)
     {
         if (!$this->has($key)) {
             throw new UnknownParameterException($key, array_keys($this->values));
@@ -30,7 +30,7 @@ class ParameterBag implements ArrayAccess
         return $this->values[$key];
     }
 
-    public function getOrNull(mixed $key): mixed
+    public function getOrNull($key)
     {
         if (!$this->has($key)) {
             return null;
@@ -39,7 +39,7 @@ class ParameterBag implements ArrayAccess
         return $this->get($key);
     }
 
-    public function remove(mixed $key): void
+    public function remove($key): void
     {
         if ($this->has($key)) {
             unset($this->values[$key]);
@@ -51,7 +51,7 @@ class ParameterBag implements ArrayAccess
         return count($this->values);
     }
 
-    public function has(mixed $key): bool
+    public function has($key): bool
     {
         return key_exists($key, $this->values);
     }
@@ -66,7 +66,7 @@ class ParameterBag implements ArrayAccess
      * @param mixed $offset
      * @return bool
      */
-    public function offsetExists(mixed $offset): bool
+    public function offsetExists($offset): bool
     {
         $this->logDeprecatedAccess();
         return $this->has($offset);
@@ -77,7 +77,7 @@ class ParameterBag implements ArrayAccess
      * @param mixed $offset
      * @return mixed
      */
-    public function offsetGet(mixed $offset): mixed
+    public function offsetGet($offset)
     {
         $this->logDeprecatedAccess();
         return $this->get($offset);
@@ -89,7 +89,7 @@ class ParameterBag implements ArrayAccess
      * @param mixed $value
      * @return void
      */
-    public function offsetSet(mixed $offset, mixed $value): void
+    public function offsetSet($offset, $value): void
     {
         $this->logDeprecatedAccess();
         $this->set($offset, $value);
@@ -100,7 +100,7 @@ class ParameterBag implements ArrayAccess
      * @param mixed $offset
      * @return void
      */
-    public function offsetUnset(mixed $offset): void
+    public function offsetUnset($offset): void
     {
         $this->logDeprecatedAccess();
         $this->remove($offset);

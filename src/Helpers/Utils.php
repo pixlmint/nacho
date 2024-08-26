@@ -4,7 +4,7 @@ namespace Nacho\Helpers;
 
 class Utils
 {
-    public static function isJson(mixed $obj): bool
+    public static function isJson($obj): bool
     {
         if (is_array($obj)) {
             return false;

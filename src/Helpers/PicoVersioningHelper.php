@@ -41,7 +41,7 @@ class PicoVersioningHelper
         return true;
     }
 
-    private static function convertDateValue(mixed $dtValue): string
+    private static function convertDateValue($dtValue): string
     {
         if (is_numeric($dtValue)) {
             $dtValue = date('Y-m-d H:i:s', $dtValue);

@@ -28,22 +28,18 @@ class Logger implements LoggerInterface, NachoLoggerInterface
     /**
      * @inheritDoc
      */
-    public function log($level, Stringable|string $message, array $context = []): void
+    public function log($level, $message, array $context = []): void
     {
-        if (!$level instanceof Level) {
-            throw new \InvalidArgumentException('Invalid level');
-        }
-
         $date = new DateTime('now', $this->utc);
         $message = $this->formatMessage($level, $date, $message, $context);
 
         $this->logWriter->write($message);
     }
 
-    private function formatMessage(Level $level, DateTime $dt, string $message, array $context = []): string
+    private function formatMessage(string $level, DateTime $dt, string $message, array $context = []): string
     {
         $formatted = $dt->format($this->dateFormat);
-        $logFormatKeys = ["{date}" => $formatted, "{level}" => $level->name, "{message}" => $message];
+        $logFormatKeys = ["{date}" => $formatted, "{level}" => $level, "{message}" => $message];
         $logMessage = $this->logFormat;
         foreach ($logFormatKeys as $key => $value) {
             $logMessage = str_replace($key, $value, $logMessage);
@@ -54,7 +50,7 @@ class Logger implements LoggerInterface, NachoLoggerInterface
     /**
      * @inheritDoc
      */
-    public function emergency(\Stringable|string $message, array $context = []): void
+    public function emergency($message, array $context = []): void
     {
         $this->log(Level::ERROR, $message, $context);
     }
@@ -62,7 +58,7 @@ class Logger implements LoggerInterface, NachoLoggerInterface
     /**
      * @inheritDoc
      */
-    public function alert(\Stringable|string $message, array $context = []): void
+    public function alert($message, array $context = []): void
     {
         $this->log(Level::ERROR, $message, $context);
     }
@@ -70,7 +66,7 @@ class Logger implements LoggerInterface, NachoLoggerInterface
     /**
      * @inheritDoc
      */
-    public function critical(\Stringable|string $message, array $context = []): void
+    public function critical($message, array $context = []): void
     {
         $this->log(Level::ERROR, $message, $context);
     }
@@ -78,7 +74,7 @@ class Logger implements LoggerInterface, NachoLoggerInterface
     /**
      * @inheritDoc
      */
-    public function error(\Stringable|string $message, array $context = []): void
+    public function error($message, array $context = []): void
     {
         $this->log(Level::ERROR, $message, $context);
     }
@@ -86,7 +82,7 @@ class Logger implements LoggerInterface, NachoLoggerInterface
     /**
      * @inheritDoc
      */
-    public function warning(\Stringable|string $message, array $context = []): void
+    public function warning($message, array $context = []): void
     {
         $this->log(Level::WARNING, $message, $context);
     }
@@ -94,7 +90,7 @@ class Logger implements LoggerInterface, NachoLoggerInterface
     /**
      * @inheritDoc
      */
-    public function notice(\Stringable|string $message, array $context = []): void
+    public function notice($message, array $context = []): void
     {
         $this->log(Level::NOTICE, $message, $context);
     }
@@ -102,7 +98,7 @@ class Logger implements LoggerInterface, NachoLoggerInterface
     /**
      * @inheritDoc
      */
-    public function info(\Stringable|string $message, array $context = []): void
+    public function info($message, array $context = []): void
     {
         $this->log(Level::INFO, $message, $context);
     }
@@ -110,7 +106,7 @@ class Logger implements LoggerInterface, NachoLoggerInterface
     /**
      * @inheritDoc
      */
-    public function debug(\Stringable|string $message, array $context = []): void
+    public function debug($message, array $context = []): void
     {
         $this->log(Level::DEBUG, $message, $context);
     }

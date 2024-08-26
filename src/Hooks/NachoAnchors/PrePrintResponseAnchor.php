@@ -24,7 +24,7 @@ class PrePrintResponseAnchor extends AbstractAnchor implements AnchorConfigurati
         return PrePrintResponse::class;
     }
 
-    public function exec(mixed $hook): void
+    public function exec($hook): void
     {
         if (!$hook instanceof PrePrintResponse) {
             throw new \Exception('This is not a valid PostFindRoute Hook');

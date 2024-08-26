@@ -29,12 +29,12 @@ class PicoMeta implements ArrayableInterface
         }
     }
 
-    public function __get(string $key): mixed
+    public function __get(string $key)
     {
         return $this->additionalValues->getOrNull($key);
     }
 
-    public function __set(string $key, mixed $value): void
+    public function __set(string $key, $value): void
     {
         $this->additionalValues->set($key, $value);
     }

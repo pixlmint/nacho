@@ -5,7 +5,7 @@ namespace Nacho\Hooks;
 class HookArgument
 {
     private string $name;
-    private mixed $value;
+    private $value;
     private bool $isRet;
 
     public function __construct(string $name, bool $isRet = false)
@@ -19,12 +19,12 @@ class HookArgument
         return $this->name;
     }
 
-    public function getValue(): mixed
+    public function getValue()
     {
         return $this->value;
     }
 
-    public function setValue(mixed $value): void
+    public function setValue($value): void
     {
         $this->value = $value;
     }

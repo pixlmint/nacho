@@ -28,6 +28,7 @@ class Route implements RouteInterface
         }
         $this->minRole = $route['minRole'];
         if ($this->path !== '/') {
+            // Remove leading slash
             $this->path = substr($this->path, 1, strlen($this->path));
         }
     }

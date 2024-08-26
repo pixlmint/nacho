@@ -43,7 +43,7 @@ class DataHandler implements DataHandlerInterface
         }
     }
 
-    public function deleteElement(string $dataType, mixed $element): void
+    public function deleteElement(string $dataType, $element): void
     {
         $data = $this->readData($dataType);
         if (!in_array($element, $data)) {
@@ -54,7 +54,7 @@ class DataHandler implements DataHandlerInterface
         $this->writeData($dataType, $data);
     }
 
-    public function addElement(string $dt, mixed $element): void
+    public function addElement(string $dt, $element): void
     {
         $data = $this->readData($dt);
         $data[] = $element;

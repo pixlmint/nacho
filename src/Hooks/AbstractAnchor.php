@@ -37,7 +37,7 @@ abstract class AbstractAnchor
         $this->arguments[] = new HookArgument($name, $isReturnValue);
     }
 
-    public abstract function exec(mixed $hook): void;
+    public abstract function exec($hook): void;
 
     private function populateArguments(array $args): void
     {

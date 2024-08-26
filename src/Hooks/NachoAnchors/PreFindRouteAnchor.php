@@ -26,7 +26,7 @@ class PreFindRouteAnchor extends AbstractAnchor implements AnchorConfigurationIn
         return 'pre_find_route';
     }
 
-    public function exec(mixed $hook): void
+    public function exec($hook): void
     {
         if (!$hook instanceof PreFindRoute) {
             throw new Exception('This is not a valid PreFindRoute Hook');

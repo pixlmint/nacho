@@ -97,7 +97,7 @@ class MetaHelper
         return $this->yamlParser;
     }
 
-    private static function escapeMetaYaml(mixed $value): array|string
+    private static function escapeMetaYaml($value)
     {
         if ($value instanceof ParameterBag) {
             $arr = [];

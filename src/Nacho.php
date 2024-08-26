@@ -13,6 +13,7 @@ use Nacho\Contracts\Response;
 use Nacho\Contracts\RouteFinderInterface;
 use Nacho\Contracts\RouteInterface;
 use Nacho\Contracts\UserHandlerInterface;
+use Nacho\Exceptions\HttpBaseException;
 use Nacho\Helpers\AlternativeContentPageHandler;
 use Nacho\Helpers\ConfigurationContainer;
 use Nacho\Helpers\DataHandler;
@@ -48,10 +49,14 @@ class Nacho implements NachoCoreInterface
 {
     public static Container $container;
 
-    public function init(array|NachoContainerBuilder $containerConfig = []): void
+    /**
+    * @param array|NachoContainerBuilder $containerConfig
+    */
+    public function init($containerConfig = []): void
     {
         if (is_array($containerConfig)) {
             $builder = $this->getContainerBuilder();
+            $builder->addDefinitions(new ContainerDefinitionsHolder(1, $containerConfig));
         } elseif ($containerConfig instanceof NachoContainerBuilder) {
             $builder = $containerConfig;
         } else {
@@ -80,30 +85,39 @@ class Nacho implements NachoCoreInterface
 
     public function run(array $config = []): void
     {
-        $this->loadConfig($config);
-        $path = $this->getPath();
+        try {
+            $this->loadConfig($config);
+            $path = $this->getPath();
 
-        $configuration = self::$container->get(ConfigurationContainer::class);
+            $configuration = self::$container->get(ConfigurationContainer::class);
 
-        $hookHandler = self::$container->get(HookHandler::class);
-        $hookHandler->registerConfigHooks($configuration->getHooks());
+            $hookHandler = self::$container->get(HookHandler::class);
+            $hookHandler->registerConfigHooks($configuration->getHooks());
 
-        $routeFinder = self::$container->get(RouteFinderInterface::class);
-        $route = $routeFinder->getRoute($path);
-        /** @var RouteInterface $route */
-        $route = $hookHandler->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
-        self::$container->get(LoggerInterface::class)->info("Route for path {$route->getPath()} found: {$route->getController()}::{$route->getFunction()}");
+            $routeFinder = self::$container->get(RouteFinderInterface::class);
+            $route = $routeFinder->getRoute($path);
+            /** @var RouteInterface $route */
+            $route = $hookHandler->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
+            self::$container->get(LoggerInterface::class)->info("Route for path {$route->getPath()} found: {$route->getController()}::{$route->getFunction()}");
 
-        self::$container->get(RequestInterface::class)->setRoute($route);
+            self::$container->get(RequestInterface::class)->setRoute($route);
 
-        $hookHandler->executeHook(PreCallActionAnchor::getName(), []);
-        $content = $this->getContent();
-        $content = $hookHandler->executeHook(PostCallActionAnchor::getName(), ['returnedResponse' => $content]);
+            $hookHandler->executeHook(PreCallActionAnchor::getName(), []);
+            $content = $this->getContent();
+            $content = $hookHandler->executeHook(PostCallActionAnchor::getName(), ['returnedResponse' => $content]);
 
-        $content = $hookHandler->executeHook(PrePrintResponseAnchor::getName(), ['response' => $content]);
-        self::$container->get(RepositoryManagerInterface::class)->close();
-        self::$container->get(LogWriterInterface::class)->close();
-        $this->printContent($content);
+            $content = $hookHandler->executeHook(PrePrintResponseAnchor::getName(), ['response' => $content]);
+            self::$container->get(RepositoryManagerInterface::class)->close();
+            self::$container->get(LogWriterInterface::class)->close();
+            $this->printContent($content);
+        } catch (HttpBaseException $e) {
+            if ($_SERVER['HTTP_ACCEPT'] === 'application/json') {
+                $response = new HttpResponse(json_encode(['error' => $e->getMessage()]), $e->getHttpErrorCode());
+            } else {
+                $response = new HttpResponse($e->getMessage(), $e->getHttpErrorCode());
+            }
+            $response->send();
+        }
     }
 
     private function loadConfig(array $config = []): void
@@ -141,8 +155,13 @@ class Nacho implements NachoCoreInterface
     public function getPath(): string
     {
         $path = $_SERVER['REDIRECT_URL'] ?? $_SERVER['REQUEST_URI'];
+        $pathAndQuery = explode('?', $path);
 
-        if (str_ends_with($path, '/')) {
+        if (count($pathAndQuery) > 0) {
+            $path = $pathAndQuery[0];
+        }
+
+        if (substr($path, -1) === '/') {
             $path = substr($path, 0, strlen($path) - 1);
         }
 

@@ -22,7 +22,7 @@ class PostHandleUpdateAnchor extends AbstractAnchor implements AnchorConfigurati
         return PostHandleUpdate::class;
     }
 
-    public function exec(mixed $hook): void
+    public function exec($hook): void
     {
         if (!$hook instanceof PostHandleUpdate) {
             throw new \Exception('This is not a valid PostHandleUpdate Hook');

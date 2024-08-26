@@ -9,19 +9,23 @@ use Nacho\Nacho;
 
 class HookHandler
 {
-    private array|AnchorConfigurationInterface $anchors;
+    /** @var array|AnchorConfigurationInterface $anchors */
+    private $anchors;
 
     public function registerHook(string $anchor, string $hook): void
     {
         $this->anchors[$anchor]->addHook($hook);
     }
 
-    public function executeHook(string $anchorName, array $arguments): mixed
+    public function executeHook(string $anchorName, array $arguments)
     {
         return $this->anchors[$anchorName]->run($arguments);
     }
 
-    public function getAnchors(): array|AnchorConfigurationInterface
+    /**
+    * @return array|AnchorConfigurationInterface
+    */
+    public function getAnchors()
     {
         return $this->anchors;
     }

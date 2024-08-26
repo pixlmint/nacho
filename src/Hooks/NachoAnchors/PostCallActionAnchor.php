@@ -24,7 +24,7 @@ class PostCallActionAnchor extends AbstractAnchor implements AnchorConfiguration
         return PostCallFunction::class;
     }
 
-    public function exec(mixed $hook): void
+    public function exec($hook): void
     {
         if (!$hook instanceof PostCallFunction) {
             throw new \Exception('This is not a valid PostFindRoute Hook');

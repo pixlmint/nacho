@@ -2,12 +2,12 @@
 
 namespace Nacho\Helpers\Log;
 
-enum Level
+class Level
 {
-    case DEBUG;
-    case INFO;
-    case NOTICE;
-    case DEPRECATION;
-    case WARNING;
-    case ERROR;
+    const DEBUG = 'debug';
+    const INFO = 'info';
+    const NOTICE = 'notice';
+    const DEPRECATION = 'deprecation';
+    const WARNING = 'warning';
+    const ERROR = 'error';
 }

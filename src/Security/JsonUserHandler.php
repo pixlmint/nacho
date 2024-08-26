@@ -23,7 +23,7 @@ class JsonUserHandler implements UserHandlerInterface
         $this->userRepository = Nacho::$container->get(UserRepository::class);
     }
 
-    public function getCurrentUser(): ModelInterface|UserInterface
+    public function getCurrentUser()
     {
         return $this->findUser($_SESSION['user']['username']);
     }
@@ -62,7 +62,7 @@ class JsonUserHandler implements UserHandlerInterface
         return $user;
     }
 
-    public function findUser($username): ModelInterface|UserInterface
+    public function findUser($username)
     {
         return $this->userRepository->getByUsername($username);
     }
