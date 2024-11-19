@@ -3,7 +3,6 @@
 namespace Nacho\ORM;
 
 use Nacho\Contracts\DataHandlerInterface;
-use Nacho\Helpers\DataHandler;
 use Nacho\Nacho;
 
 class RepositoryManager implements RepositoryManagerInterface
@@ -45,7 +44,7 @@ class RepositoryManager implements RepositoryManagerInterface
             }
         }
         if ($hasChanges) {
-            $this->dataHandler->storeAllData();
+            $this->dataHandler->flush();
         }
 
         $this->repositories = [];

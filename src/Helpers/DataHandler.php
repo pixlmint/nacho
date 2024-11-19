@@ -36,11 +36,22 @@ class DataHandler implements DataHandlerInterface
         $this->data[$dataType] = $data;
     }
 
-    public function storeAllData(): void
+    /**
+     * @inheritdoc
+     */
+    public function flush(): void
     {
         foreach ($this->data as $dt => $arr) {
             $this->storeData($dt, $arr);
         }
+    }
+
+    /**
+    * @deprecated Use {@see flush} instead
+    */
+    public function storeAllData(): void
+    {
+        $this->flush();
     }
 
     public function deleteElement(string $dataType, mixed $element): void

@@ -60,14 +60,7 @@ class Nacho implements NachoCoreInterface
         $builder->addDefinitions($this->getContainerConfig());
         self::$container = $builder->build();
 
-        /** @var HookHandler $hookHandler */
-        $hookHandler = self::$container->get(HookHandler::class);
-
-        $hookHandler->registerAnchor(PostFindRouteAnchor::getName(), new PostFindRouteAnchor());
-        $hookHandler->registerAnchor(PreCallActionAnchor::getName(), new PreCallActionAnchor());
-        $hookHandler->registerAnchor(PostCallActionAnchor::getName(), new PostCallActionAnchor());
-        $hookHandler->registerAnchor(PrePrintResponseAnchor::getName(), new PrePrintResponseAnchor());
-        $hookHandler->registerAnchor(PostHandleUpdateAnchor::getName(), new PostHandleUpdateAnchor());
+        $this->initAnchors(self::$container->get(HookHandler::class));
     }
 
     public function getContainerBuilder(): NachoContainerBuilder
@@ -111,8 +104,31 @@ class Nacho implements NachoCoreInterface
         if (!$config) {
             $config = include_once($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
         }
+
+        if (key_exists('plugins', $config)) {
+            $pluginConfig = array_values(self::loadPluginsConfig($config['plugins']));
+        }
+
+        $configs = array_merge_recursive($config, ...$pluginConfig);
         $configContainer = self::$container->get(ConfigurationContainer::class);
-        $configContainer->init($config);
+        $configContainer->init($configs);
+    }
+
+    private function loadPluginsConfig(array $pluginsConfig): array
+    {
+        $ret = [];
+        foreach ($pluginsConfig as $plugin) {
+            if ($this->isPluginEnabled($plugin)) {
+                $ret[$plugin['name']] = $plugin['config'];
+            }
+        }
+
+        return $ret;
+    }
+
+    private function isPluginEnabled(array $plugin): bool
+    {
+        return (key_exists('enabled', $plugin) && $plugin['enabled']) || !key_exists('enabled', $plugin);
     }
 
     private function printContent(Response $content): void
@@ -147,6 +163,15 @@ class Nacho implements NachoCoreInterface
         }
 
         return $path;
+    }
+
+    private function initAnchors(HookHandler $hookHandler): void
+    {
+        $hookHandler->registerAnchor(PostFindRouteAnchor::getName(), new PostFindRouteAnchor());
+        $hookHandler->registerAnchor(PreCallActionAnchor::getName(), new PreCallActionAnchor());
+        $hookHandler->registerAnchor(PostCallActionAnchor::getName(), new PostCallActionAnchor());
+        $hookHandler->registerAnchor(PrePrintResponseAnchor::getName(), new PrePrintResponseAnchor());
+        $hookHandler->registerAnchor(PostHandleUpdateAnchor::getName(), new PostHandleUpdateAnchor());
     }
 
     private function getContainerConfig(): ContainerDefinitionsHolder
