@@ -13,6 +13,7 @@ use Nacho\Contracts\Response;
 use Nacho\Contracts\RouteFinderInterface;
 use Nacho\Contracts\RouteInterface;
 use Nacho\Contracts\UserHandlerInterface;
+use Nacho\Exceptions\BaseHttpException;
 use Nacho\Helpers\AlternativeContentPageHandler;
 use Nacho\Helpers\ConfigurationContainer;
 use Nacho\Helpers\DataHandler;
@@ -151,7 +152,16 @@ class Nacho implements NachoCoreInterface
             return new HttpResponse("{$function} does not exist in {$controllerClass}", 404);
         }
 
-        return self::$container->call([$controller, $function]);
+        try {
+            return self::$container->call([$controller, $function]);
+        } catch (BaseHttpException $exception) {
+            return $this->handleHttpException($exception);
+        }
+    }
+
+    private function handleHttpException(BaseHttpException $exception): Response
+    {
+        return new HttpResponse($exception->getMessage(), $exception->getCode());
     }
 
     public function getPath(): string
