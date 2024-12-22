@@ -46,11 +46,7 @@ abstract class AbstractRepository implements RepositoryInterface
         if ($id < 0 || !$id) {
             $this->data[] = $newData;
         } else {
-            if (key_exists($newData->getId(), $this->data)) {
-                $this->data[] = $newData;
-            } else {
-                $this->data[$newData->getId()] = $newData;
-            }
+            $this->data[$newData->getId()] = $newData;
         }
         $this->dataChanged = true;
     }
