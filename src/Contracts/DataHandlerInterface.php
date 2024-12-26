@@ -11,4 +11,6 @@ interface DataHandlerInterface
      * Write all cached data to persistent storage
      */
     public function flush(): void;
+
+    public function readData(string $data): array;
 }
