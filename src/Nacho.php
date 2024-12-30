@@ -110,7 +110,7 @@ class Nacho implements NachoCoreInterface
             $pluginConfig = array_values(self::loadPluginsConfig($config['plugins']));
         }
 
-        $configs = array_merge_recursive($config, ...$pluginConfig);
+        $configs = array_replace_recursive($config, ...$pluginConfig);
         $configContainer = self::$container->get(ConfigurationContainer::class);
         $configContainer->init($configs);
     }
