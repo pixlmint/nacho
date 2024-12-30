@@ -102,15 +102,18 @@ class Nacho implements NachoCoreInterface
 
     private function loadConfig(array $config = []): void
     {
+        $configs = [];
+
         if (!$config) {
             $config = include_once($_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
         }
 
         if (key_exists('plugins', $config)) {
-            $pluginConfig = array_values(self::loadPluginsConfig($config['plugins']));
+            $configs = array_values(self::loadPluginsConfig($config['plugins']));
         }
+        $configs[] = $config;
 
-        $configs = array_replace_recursive(...$pluginConfig, $config);
+        $configs = array_replace_recursive($configs);
         $configContainer = self::$container->get(ConfigurationContainer::class);
         $configContainer->init($configs);
     }
