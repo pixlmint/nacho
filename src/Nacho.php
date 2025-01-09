@@ -15,6 +15,7 @@ use Nacho\Contracts\RouteInterface;
 use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Exceptions\BaseHttpException;
 use Nacho\Helpers\AlternativeContentPageHandler;
+use Nacho\Helpers\ConfigMerger;
 use Nacho\Helpers\ConfigurationContainer;
 use Nacho\Helpers\DataHandler;
 use Nacho\Helpers\FileHelper;
@@ -111,9 +112,10 @@ class Nacho implements NachoCoreInterface
         if (key_exists('plugins', $config)) {
             $configs = array_values(self::loadPluginsConfig($config['plugins']));
         }
+        unset($config['plugins']);
         $configs[] = $config;
 
-        $configs = array_replace_recursive(...$configs);
+        $configs = ConfigMerger::merge($configs);
         $configContainer = self::$container->get(ConfigurationContainer::class);
         $configContainer->init($configs);
     }
