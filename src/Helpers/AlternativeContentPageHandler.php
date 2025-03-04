@@ -14,10 +14,12 @@ class AlternativeContentPageHandler implements PageHandler
 {
     private PicoPage $page;
     private Request $request;
+    private PdfHelper $pdfHelper;
 
-    public function __construct(Request $request)
+    public function __construct(Request $request, PdfHelper $pdfHelper)
     {
         $this->request = $request;
+        $this->pdfHelper = $pdfHelper;
     }
 
     public function setPage(PicoPage $page): void
@@ -64,10 +66,6 @@ class AlternativeContentPageHandler implements PageHandler
 
     public function renderPage(): string
     {
-        // $pdfContent = file_get_contents($this->getAbsoluteFilePath());
-
-        // return base64_encode($pdfContent);
-        
         return 'rendered content here';
     }
 
@@ -111,9 +109,13 @@ class AlternativeContentPageHandler implements PageHandler
         $newFilename = $uploadedFile['name'];
         $entryPath = PageManager::getContentDir() . DIRECTORY_SEPARATOR . $page->meta->parentPath . DIRECTORY_SEPARATOR . $newFilename;
 
-        if (file_put_contents($entryPath, file_get_contents($uploadedFile['tmp_name'])) === false) {
+        $uploadSuccess = file_put_contents($entryPath, file_get_contents($uploadedFile['tmp_name']));
+
+        if ($uploadSuccess === false) {
             throw new Exception("Failed to write the new file to {$entryPath}");
         }
+
+        $page->raw_content = $this->pdfHelper->getContent($entryPath);
 
         $page->meta->alternative_content = $newFilename;
     }

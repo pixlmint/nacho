@@ -7,11 +7,9 @@ use Nacho\Contracts\PageHandler;
 use Nacho\Contracts\PageManagerInterface;
 use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Hooks\NachoAnchors\PostHandleUpdateAnchor;
-use Nacho\Nacho;
 use Nacho\Models\PicoMeta;
 use Nacho\Models\PicoPage;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Yaml\Exception\ParseException;
 
 class PageManager implements PageManagerInterface
 {
@@ -48,6 +46,9 @@ class PageManager implements PageManagerInterface
         $this->alternativeContentPageHandler = $alternativeContentPageHandler;
     }
 
+    /**
+     * @return array|PicoPage[]
+     */
     public function getPages(): array
     {
         if (!$this->pages) {
@@ -57,6 +58,9 @@ class PageManager implements PageManagerInterface
         return $this->pages;
     }
 
+    /**
+     * @return array|PicoPage[]
+     */
     public function getPageTree(): array
     {
         if (!self::$INCLUDE_PAGE_TREE) {
