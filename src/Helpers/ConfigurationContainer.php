@@ -49,6 +49,11 @@ class ConfigurationContainer
         return $this->routes;
     }
 
+    public function setRoutes(array $routes): void
+    {
+        $this->routes = $routes;
+    }
+
     public function getSecurity(): array
     {
         return $this->security;

@@ -85,10 +85,11 @@ class Nacho implements NachoCoreInterface
         $hookHandler->registerConfigHooks($configuration->getHooks());
 
         $routeFinder = self::$container->get(RouteFinderInterface::class);
-        $hookHandler->executeHook(PreFindRouteAnchor::getName(), [
+        $routes = $hookHandler->executeHook(PreFindRouteAnchor::getName(), [
             'routes' => $configuration->getRoutes(),
             'path'   => $path,
         ]);
+        $configuration->setRoutes($routes);
         $route = $routeFinder->getRoute($path);
         /** @var RouteInterface $route */
         $route = $hookHandler->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
