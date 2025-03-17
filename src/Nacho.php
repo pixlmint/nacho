@@ -33,6 +33,7 @@ use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PostFindRouteAnchor;
 use Nacho\Hooks\NachoAnchors\PostHandleUpdateAnchor;
 use Nacho\Hooks\NachoAnchors\PreCallActionAnchor;
+use Nacho\Hooks\NachoAnchors\PreFindRouteAnchor;
 use Nacho\Hooks\NachoAnchors\PrePrintResponseAnchor;
 use Nacho\Models\ContainerDefinitionsHolder;
 use Nacho\Models\HttpResponse;
@@ -84,6 +85,10 @@ class Nacho implements NachoCoreInterface
         $hookHandler->registerConfigHooks($configuration->getHooks());
 
         $routeFinder = self::$container->get(RouteFinderInterface::class);
+        $hookHandler->executeHook(PreFindRouteAnchor::getName(), [
+            'routes' => $configuration->getRoutes(),
+            'path'   => $path,
+        ]);
         $route = $routeFinder->getRoute($path);
         /** @var RouteInterface $route */
         $route = $hookHandler->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
