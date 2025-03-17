@@ -188,6 +188,7 @@ class Nacho implements NachoCoreInterface
 
     private function initAnchors(HookHandler $hookHandler): void
     {
+        $hookHandler->registerAnchor(PreFindRouteAnchor::getName(), new PreFindRouteAnchor());
         $hookHandler->registerAnchor(PostFindRouteAnchor::getName(), new PostFindRouteAnchor());
         $hookHandler->registerAnchor(PreCallActionAnchor::getName(), new PreCallActionAnchor());
         $hookHandler->registerAnchor(PostCallActionAnchor::getName(), new PostCallActionAnchor());
