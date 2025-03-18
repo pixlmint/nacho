@@ -3,7 +3,6 @@
 namespace Nacho\Helpers;
 
 use Nacho\Contracts\RouteFinderInterface;
-use Nacho\Hooks\HookArgument;
 use Nacho\Hooks\NachoAnchors\OnRouteNotFoundAnchor;
 use Nacho\Nacho;
 use Nacho\Models\Route;
@@ -18,7 +17,7 @@ class RouteFinder implements RouteFinderInterface
         $route = $this->findRoute($path);
         
         if (!$route) {
-            $route = Nacho::$container->get(HookHandler::class)->executeHook(OnRouteNotFoundAnchor::class, ['path' => $path]);
+            $route = Nacho::$container->get(HookHandler::class)->executeHook(OnRouteNotFoundAnchor::getName(), ['path' => $path]);
             if (!$route) {
                 $route = $this->findRoute('/');
             }
