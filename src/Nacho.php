@@ -6,6 +6,7 @@ use DateTime;
 use DateTimeZone;
 use DI\Container;
 use Nacho\Contracts\DataHandlerInterface;
+use Nacho\Contracts\Hooks\OnRouteNotFoundFunction;
 use Nacho\Contracts\NachoCoreInterface;
 use Nacho\Contracts\PageManagerInterface;
 use Nacho\Contracts\RequestInterface;
@@ -29,6 +30,7 @@ use Nacho\Helpers\NachoContainerBuilder;
 use Nacho\Helpers\PageFinder;
 use Nacho\Helpers\PageManager;
 use Nacho\Helpers\RouteFinder;
+use Nacho\Hooks\NachoAnchors\OnRouteNotFoundAnchor;
 use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PostFindRouteAnchor;
 use Nacho\Hooks\NachoAnchors\PostHandleUpdateAnchor;
@@ -188,6 +190,7 @@ class Nacho implements NachoCoreInterface
 
     private function initAnchors(HookHandler $hookHandler): void
     {
+        $hookHandler->registerAnchor(OnRouteNotFoundAnchor::getName(), new OnRouteNotFoundAnchor());
         $hookHandler->registerAnchor(PreFindRouteAnchor::getName(), new PreFindRouteAnchor());
         $hookHandler->registerAnchor(PostFindRouteAnchor::getName(), new PostFindRouteAnchor());
         $hookHandler->registerAnchor(PreCallActionAnchor::getName(), new PreCallActionAnchor());

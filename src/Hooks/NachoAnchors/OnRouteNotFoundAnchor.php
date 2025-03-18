@@ -2,11 +2,12 @@
 
 namespace Nacho\Hooks\NachoAnchors;
 
+use Nacho\Contracts\Hooks\AnchorConfigurationInterface;
 use Nacho\Contracts\Hooks\OnRouteNotFoundFunction;
 use Nacho\Hooks\AbstractAnchor;
 use Nacho\Hooks\HookArgument;
 
-class OnRouteNotFoundAnchor extends AbstractAnchor
+class OnRouteNotFoundAnchor extends AbstractAnchor implements AnchorConfigurationInterface
 {
     public function __construct()
     {
