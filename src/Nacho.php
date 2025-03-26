@@ -30,6 +30,7 @@ use Nacho\Helpers\NachoContainerBuilder;
 use Nacho\Helpers\PageFinder;
 use Nacho\Helpers\PageManager;
 use Nacho\Helpers\RouteFinder;
+use Nacho\Helpers\TwigTemplateProvider;
 use Nacho\Hooks\NachoAnchors\OnRouteNotFoundAnchor;
 use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PostFindRouteAnchor;
@@ -203,6 +204,10 @@ class Nacho implements NachoCoreInterface
     {
         return new ContainerDefinitionsHolder(-1, [
             'path' => factory([self::class, 'getPath']),
+            'twigTemplatePath' => factory(function() {
+                return $_SERVER['DOCUMENT_ROOT'] . '/src/Views';
+            }),
+            TwigTemplateProvider::class => create(TwigTemplateProvider::class)->constructor(get('twigTemplatePath')),
             DataHandlerInterface::class => create(DataHandler::class),
             UserHandlerInterface::class => create(JsonUserHandler::class),
             PageManagerInterface::class => create(PageManager::class)->constructor(

@@ -3,13 +3,14 @@
 namespace Nacho\Controllers;
 
 use Nacho\Contracts\UserHandlerInterface;
+use Nacho\Helpers\HookHandler;
+use Nacho\Helpers\TwigTemplateProvider;
+use Nacho\Hooks\NachoAnchors\PreRenderTemplateAnchor;
 use Nacho\Models\HttpRedirectResponse;
 use Nacho\Models\HttpResponse;
 use Nacho\Nacho;
 use Psr\Log\LoggerInterface;
 use Twig\Environment;
-use Twig\Loader\FilesystemLoader;
-use Twig\TwigFunction;
 
 abstract class AbstractController
 {
@@ -23,12 +24,7 @@ abstract class AbstractController
     protected function getTwig(): ?Environment
     {
         if (!$this->twig) {
-            $loader = new FilesystemLoader($_SERVER['DOCUMENT_ROOT'] . '/src/Views');
-            $this->twig = new Environment($loader);
-            $this->twig->addFunction(new TwigFunction('base64_encode', 'base64_encode'));
-            $this->twig->addFunction(new TwigFunction('base64_decode', 'base64_decode'));
-            $this->twig->addFunction(new TwigFunction('is_array', 'is_array'));
-            $this->twig->addFunction(new TwigFunction('is_granted', [$this, 'is_granted']));
+            $this->twig = Nacho::$container->get(TwigTemplateProvider::class)->getEnvironment();
         }
 
         return $this->twig;
@@ -54,7 +50,13 @@ abstract class AbstractController
 
     protected function render(string $file, array $args = []): HttpResponse
     {
-        $content = $this->getTwig()->render($file, $args);
+        $twig = $this->getTwig();
+        $args = Nacho::$container->get(HookHandler::class)
+            ->executeHook(
+                PreRenderTemplateAnchor::getName(),
+                ['template' => $file, 'parameters' => $args]
+            );
+        $content = $twig->render($file, $args);
        
         return new HttpResponse($content);
     }
