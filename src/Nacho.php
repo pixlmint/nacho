@@ -6,7 +6,6 @@ use DateTime;
 use DateTimeZone;
 use DI\Container;
 use Nacho\Contracts\DataHandlerInterface;
-use Nacho\Contracts\Hooks\OnRouteNotFoundFunction;
 use Nacho\Contracts\NachoCoreInterface;
 use Nacho\Contracts\PageManagerInterface;
 use Nacho\Contracts\RequestInterface;
@@ -35,9 +34,11 @@ use Nacho\Hooks\NachoAnchors\OnRouteNotFoundAnchor;
 use Nacho\Hooks\NachoAnchors\PostCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PostFindRouteAnchor;
 use Nacho\Hooks\NachoAnchors\PostHandleUpdateAnchor;
+use Nacho\Hooks\NachoAnchors\PostRenderMarkdownAnchor;
 use Nacho\Hooks\NachoAnchors\PreCallActionAnchor;
 use Nacho\Hooks\NachoAnchors\PreFindRouteAnchor;
 use Nacho\Hooks\NachoAnchors\PrePrintResponseAnchor;
+use Nacho\Hooks\NachoAnchors\PreRenderMarkdownAnchor;
 use Nacho\Models\ContainerDefinitionsHolder;
 use Nacho\Models\HttpResponse;
 use Nacho\Models\Request;
@@ -198,6 +199,8 @@ class Nacho implements NachoCoreInterface
         $hookHandler->registerAnchor(PostCallActionAnchor::getName(), new PostCallActionAnchor());
         $hookHandler->registerAnchor(PrePrintResponseAnchor::getName(), new PrePrintResponseAnchor());
         $hookHandler->registerAnchor(PostHandleUpdateAnchor::getName(), new PostHandleUpdateAnchor());
+        $hookHandler->registerAnchor(PreRenderMarkdownAnchor::getName(), new PreRenderMarkdownAnchor());
+        $hookHandler->registerAnchor(PostRenderMarkdownAnchor::getName(), new PostRenderMarkdownAnchor());
     }
 
     private function getContainerConfig(): ContainerDefinitionsHolder

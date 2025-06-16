@@ -10,10 +10,12 @@ class MarkdownPageHandler implements PageHandler
 {
     private Parsedown $mdParser;
     private PicoPage $page;
+    private HookHandler $hookHandler;
 
-    public function __construct(Parsedown $mdParser)
+    public function __construct(Parsedown $mdParser, HookHandler $hookHandler)
     {
         $this->mdParser = $mdParser;
+        $this->hookHandler = $hookHandler;
     }
 
     public function setPage(PicoPage $page): void
@@ -29,7 +31,9 @@ class MarkdownPageHandler implements PageHandler
         }
 
         $content = PageManager::prepareFileContent($page->raw_content);
-        $page->content = $this->mdParser->parse($content);
+        $content = $this->hookHandler->executeHook('pre_render_markdown', ['raw_content' => $content]);
+        $renderedContent = $this->mdParser->parse($content);
+        $page->content = $this->hookHandler->executeHook('post_render_markdown', ['content' => $renderedContent]);
 
         return $page->content;
     }
