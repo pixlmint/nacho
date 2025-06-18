@@ -18,7 +18,7 @@ class RouteFinder implements RouteFinderInterface
         
         if (!$route) {
             $route = Nacho::$container->get(HookHandler::class)->executeHook(OnRouteNotFoundAnchor::getName(), ['path' => $path]);
-            if (!$route) {
+            if (!$route || $route === $path) {
                 $route = $this->findRoute('/');
             }
         }
