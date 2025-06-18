@@ -26,6 +26,11 @@ class HttpResponse extends AbstractHttpResponse implements Response
         return $this->status;
     }
 
+    public function setStatus(int $status): void
+    {
+        $this->status = $status;
+    }
+
     public function send(): void {
         $this->sendHeaders();
         $this->sendStatus($this->getStatus());
