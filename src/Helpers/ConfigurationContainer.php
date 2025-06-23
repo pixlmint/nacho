@@ -8,6 +8,7 @@ class ConfigurationContainer
 {
     private array $config;
 
+    private bool $debug = false;
     private array $routes = [];
     private array $hooks = [];
     private array $orm = [];
@@ -62,6 +63,11 @@ class ConfigurationContainer
     public function getOrm(): array
     {
         return $this->orm;
+    }
+
+    public function isDebug(): bool
+    {
+        return $this->debug;
     }
 
     public function getCustomConfig(string $configName): array

@@ -206,6 +206,9 @@ class Nacho implements NachoCoreInterface
     private function getContainerConfig(): ContainerDefinitionsHolder
     {
         return new ContainerDefinitionsHolder(-1, [
+            'debug' => factory(function(Container $c) {
+                return $c->get(ConfigurationContainer::class)->isDebug();
+            }),
             'path' => factory([self::class, 'getPath']),
             'twigTemplatePath' => factory(function() {
                 return $_SERVER['DOCUMENT_ROOT'] . '/src/Views';
