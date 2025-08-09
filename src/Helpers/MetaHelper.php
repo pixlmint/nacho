@@ -84,7 +84,7 @@ class MetaHelper
 
     public static function createMetaString(array $meta): string
     {
-	$meta = static::escapeMetaYaml($meta);
+        $meta = static::escapeMetaYaml($meta);
         return "---" . self::implode_recursive($meta, "\n") . "\n---\n";
     }
 
@@ -150,10 +150,14 @@ class MetaHelper
 
     private static function prepareMetaDate(string $dateToPrepare): string
     {
-        $rawDateCreated = intval($dateToPrepare);
-        if ($rawDateCreated !== 0) {
-            return date('Y-m-d H:i:s', $rawDateCreated);
+        if (is_numeric($dateToPrepare)) {
+            $rawDateCreated = intval($dateToPrepare);
+            if ($rawDateCreated !== 0) {
+                return date('Y-m-d H:i:s', $rawDateCreated);
+            }
+            return '';
+        } else {
+            return $dateToPrepare;
         }
-        return '';
     }
 }
