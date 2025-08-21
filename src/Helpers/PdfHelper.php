@@ -2,12 +2,13 @@
 
 namespace Nacho\Helpers;
 
+use Nacho\Contracts\AlternativeContentHelper;
 use Nacho\Nacho;
 use PixlMint\CMS\Helpers\Stopwatch;
 use Psr\Log\LoggerInterface;
 use Spatie\PdfToText\Pdf;
 
-class PdfHelper
+class PdfHelper implements AlternativeContentHelper
 {
     private LoggerInterface $logger;
 
@@ -16,7 +17,7 @@ class PdfHelper
         $this->logger = $logger;
     }
 
-    public function getContent(string $pdfPath)
+    public function getContent(string $pdfPath): string
     {
         return $this->getPdfContent($pdfPath, [Pdf::class, 'getText']);
     }

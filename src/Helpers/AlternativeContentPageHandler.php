@@ -15,11 +15,13 @@ class AlternativeContentPageHandler implements PageHandler
     private PicoPage $page;
     private Request $request;
     private PdfHelper $pdfHelper;
+    private JupyterNotebookHelper $jupyterNotebookHelper;
 
-    public function __construct(Request $request, PdfHelper $pdfHelper)
+    public function __construct(Request $request, PdfHelper $pdfHelper, JupyterNotebookHelper $jupyterNotebookHelper)
     {
         $this->request = $request;
         $this->pdfHelper = $pdfHelper;
+        $this->jupyterNotebookHelper = $jupyterNotebookHelper;
     }
 
     public function setPage(PicoPage $page): void
@@ -49,8 +51,14 @@ class AlternativeContentPageHandler implements PageHandler
         $uploadedFile = $this->getUploadedFile();
 
         if ($uploadedFile) {
-            $this->deleteOldFile();
-            $this->storeNewFile($uploadedFile);
+            if (isset($uploadedFile['name'])) {
+                $this->deleteOldFile();
+                $this->storeNewFile($uploadedFile);
+            } else if (isset($uploadedFile['content'])) {
+                $this->replaceFileContent($uploadedFile['content']);
+            } else {
+                // This is a strange file...
+            }
         }
 
         return $this->page;
@@ -66,24 +74,37 @@ class AlternativeContentPageHandler implements PageHandler
 
     public function renderPage(): string
     {
-        return 'rendered content here';
+        if ($this->page->meta->renderer === 'ipynb') {
+            $mdPageHandler = Nacho::$container->get(MarkdownPageHandler::class);
+
+            $mdPageHandler->setPage($this->page);
+            return $mdPageHandler->renderPage();
+        } else {
+            return 'rendered content here';
+        }
     }
 
     private function getUploadedFile(): array
     {
         $uploadedFiles = $this->request->getFiles();
 
-        if (!isset($uploadedFiles['alternative_content'])) {
+        if (isset($uploadedFiles['alternative_content'])) {
+            $uploadedFile = $uploadedFiles['alternative_content'];
+
+            if ($uploadedFile['error'] !== UPLOAD_ERR_OK) {
+                if ($uploadedFile['error'] === UPLOAD_ERR_INI_SIZE) {
+                    $maxSize = ini_get('upload_max_filesize');
+                    throw new Exception("Uploaded file exceeds size limit (max: $maxSize)");
+                }
+                throw new Exception("File upload error: " . $uploadedFile['error']);
+            }
+
+            return $uploadedFile;
+        } else if ($this->request->getBody()->has('alternative_content_raw')) {
+            return ['content' => $this->request->getBody()->get('alternative_content_raw')];
+        } else {
             return [];
         }
-
-        $uploadedFile = $uploadedFiles['alternative_content'];
-
-        if ($uploadedFile['error'] !== UPLOAD_ERR_OK) {
-            throw new Exception("File upload error: " . $uploadedFile['error']);
-        }
-
-        return $uploadedFile;
     }
 
     public function getAbsoluteFilePath(): string
@@ -103,6 +124,15 @@ class AlternativeContentPageHandler implements PageHandler
         }
     }
 
+    private function replaceFileContent(string $content): void
+    {
+        $page = $this->page;
+        $entryPath = PageManager::getContentDir() . DIRECTORY_SEPARATOR . $page->meta->parentPath . DIRECTORY_SEPARATOR . $page->meta->alternative_content;
+        file_put_contents($entryPath, $content);
+
+        $this->handleExtractContent($entryPath);
+    }
+
     private function storeNewFile(array $uploadedFile): void
     {
         $page = $this->page;
@@ -115,8 +145,18 @@ class AlternativeContentPageHandler implements PageHandler
             throw new Exception("Failed to write the new file to {$entryPath}");
         }
 
-        $page->raw_content = $this->pdfHelper->getContent($entryPath);
+        $this->handleExtractContent($entryPath);
 
         $page->meta->alternative_content = $newFilename;
+    }
+
+    private function handleExtractContent(string $newFilePath)
+    {
+        $page = $this->page;
+        if ($page->meta->renderer === 'pdf') {
+            $page->raw_content = $this->pdfHelper->getContent($newFilePath);
+        } elseif ($page->meta->renderer === 'ipynb') {
+            $page->raw_content = $this->jupyterNotebookHelper->getContent($newFilePath);
+        }
     }
 }

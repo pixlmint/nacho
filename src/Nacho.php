@@ -20,6 +20,7 @@ use Nacho\Helpers\ConfigurationContainer;
 use Nacho\Helpers\DataHandler;
 use Nacho\Helpers\FileHelper;
 use Nacho\Helpers\HookHandler;
+use Nacho\Helpers\JupyterNotebookHelper;
 use Nacho\Helpers\Log\FileLogWriter;
 use Nacho\Helpers\Log\Logger;
 use Nacho\Helpers\Log\LogWriterInterface;
@@ -54,6 +55,7 @@ use function DI\get;
 class Nacho implements NachoCoreInterface
 {
     public static Container $container;
+    private bool $configLoaded = false;
 
     public function init(array|NachoContainerBuilder $containerConfig = []): void
     {
@@ -111,8 +113,10 @@ class Nacho implements NachoCoreInterface
         $this->printContent($content);
     }
 
-    private function loadConfig(array $config = []): void
+    public function loadConfig(array $config = []): void
     {
+        if ($this->configLoaded)
+            return;
         $configs = [];
 
         if (!$config) {
@@ -128,6 +132,7 @@ class Nacho implements NachoCoreInterface
         $configs = ConfigMerger::merge($configs);
         $configContainer = self::$container->get(ConfigurationContainer::class);
         $configContainer->init($configs);
+        $this->configLoaded = true;
     }
 
     private function loadPluginsConfig(array $pluginsConfig): array
@@ -213,6 +218,7 @@ class Nacho implements NachoCoreInterface
             'twigTemplatePath' => factory(function() {
                 return $_SERVER['DOCUMENT_ROOT'] . '/src/Views';
             }),
+            Nacho::class => $this,
             TwigTemplateProvider::class => create(TwigTemplateProvider::class)->constructor(get('twigTemplatePath')),
             DataHandlerInterface::class => create(DataHandler::class),
             UserHandlerInterface::class => create(JsonUserHandler::class),
@@ -252,6 +258,10 @@ class Nacho implements NachoCoreInterface
                 $logDir .= DIRECTORY_SEPARATOR . $date->format('Y-m-d') . '.log';
                 return new FileLogWriter($logDir);
             }),
+            JupyterNotebookHelper::class => create(JupyterNotebookHelper::class)->constructor(
+                get(LoggerInterface::class),
+                get('debug'),
+            ),
         ]);
     }
 }
