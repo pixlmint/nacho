@@ -99,13 +99,21 @@ class JupyterNotebookHelper implements AlternativeContentHelper
 
     private function getCellCodeLanguage(array $cell): string
     {
-        if (isset($cell['source']) && count($cell['source']) > 0) {
-            $re = '/%%(.+)/m';
-            $str = $cell['source'][0];
-            preg_match($re, $str, $matches);
-            if (strlen($matches[1]) > 0) {
-                return $matches[1];
+        if (isset($cell['source'])) {
+            if (is_string($cell['source'])) {
+                $source = explode("\n", $cell['source']);
+            } else {
+                $source = $cell['source'];
             }
+            if (count($source) > 0) {
+                $re = '/%%(.+)/m';
+                $str = $source[0];
+                preg_match($re, $str, $matches);
+                if (count($matches) >= 2 && strlen($matches[1]) > 0) {
+                    return $matches[1];
+                }
+            }
+
             return 'python';
         } else {
             return 'python';
