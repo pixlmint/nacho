@@ -8,4 +8,6 @@ interface RouteInterface
     public function getController(): string;
     public function getFunction(): string;
     public function getVariables(): array;
+    public function isMethodAllowed(string $method): bool;
+    public function getAllowedMethods(): string | array;
 }

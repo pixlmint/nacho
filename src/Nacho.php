@@ -2,6 +2,7 @@
 
 namespace Nacho;
 
+use Codeception\Util\HttpCode;
 use DateTime;
 use DateTimeZone;
 use DI\Container;
@@ -14,6 +15,7 @@ use Nacho\Contracts\RouteFinderInterface;
 use Nacho\Contracts\RouteInterface;
 use Nacho\Contracts\UserHandlerInterface;
 use Nacho\Exceptions\BaseHttpException;
+use Nacho\Exceptions\MethodNotAllowedHttpException;
 use Nacho\Helpers\AlternativeContentPageHandler;
 use Nacho\Helpers\ConfigMerger;
 use Nacho\Helpers\ConfigurationContainer;
@@ -41,6 +43,7 @@ use Nacho\Hooks\NachoAnchors\PreFindRouteAnchor;
 use Nacho\Hooks\NachoAnchors\PrePrintResponseAnchor;
 use Nacho\Hooks\NachoAnchors\PreRenderMarkdownAnchor;
 use Nacho\Models\ContainerDefinitionsHolder;
+use Nacho\Models\HttpMethod;
 use Nacho\Models\HttpResponse;
 use Nacho\Models\Request;
 use Nacho\ORM\RepositoryManager;
@@ -97,20 +100,27 @@ class Nacho implements NachoCoreInterface
         ]);
         $configuration->setRoutes($routes);
         $route = $routeFinder->getRoute($path);
+        $request = self::$container->get(Request::class);
         /** @var RouteInterface $route */
         $route = $hookHandler->executeHook(PostFindRouteAnchor::getName(), ['route' => $route]);
         self::$container->get(LoggerInterface::class)->info("Route for path {$route->getPath()} found: {$route->getController()}::{$route->getFunction()}");
+        $request->setRoute($route);
 
-        self::$container->get(RequestInterface::class)->setRoute($route);
+        if (!$route->isMethodAllowed($request->requestMethod)) {
+            $response = new HttpResponse(null, HttpCode::METHOD_NOT_ALLOWED);
+        } else if ($request->isMethod(HttpMethod::OPTIONS)) {
+            $response = $this->handleOptionsRequest($route, $request);
+        } else {
+            $hookHandler->executeHook(PreCallActionAnchor::getName(), []);
+            $response = $this->getContent();
+            $response = $hookHandler->executeHook(PostCallActionAnchor::getName(), ['returnedResponse' => $response]);
 
-        $hookHandler->executeHook(PreCallActionAnchor::getName(), []);
-        $content = $this->getContent();
-        $content = $hookHandler->executeHook(PostCallActionAnchor::getName(), ['returnedResponse' => $content]);
+            $response = $hookHandler->executeHook(PrePrintResponseAnchor::getName(), ['response' => $response]);
+        }
 
-        $content = $hookHandler->executeHook(PrePrintResponseAnchor::getName(), ['response' => $content]);
         self::$container->get(RepositoryManagerInterface::class)->close();
         self::$container->get(LogWriterInterface::class)->close();
-        $this->printContent($content);
+        $this->printContent($response);
     }
 
     public function loadConfig(array $config = []): void
@@ -134,6 +144,30 @@ class Nacho implements NachoCoreInterface
         $configContainer->init($configs);
         $this->configLoaded = true;
     }
+
+    private function handleOptionsRequest(RouteInterface $route, Request $request): Response
+    {
+        $allowedMethods = $route->getAllowedMethods();
+        if (is_array($allowedMethods)) {
+            $allowedMethods = implode(', ', $allowedMethods);
+        } elseif ($allowedMethods === '*') {
+            $allowedMethods = implode(', ', [HttpMethod::OPTIONS, HttpMethod::GET, HttpMethod::POST, HttpMethod::PUT, HttpMethod::DELETE]);
+        }
+        if ($request->server->getOrNull('HTTP_ACCESS_CONTROL_REQUEST_METHOD') === null) {
+            $headers = [
+                'Allow' => $allowedMethods,
+            ];
+        } else {
+            $headers = [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => $allowedMethods,
+            ];
+        }
+        $response = new HttpResponse('', 200, $headers);
+
+        return $response;
+    }
+
 
     private function loadPluginsConfig(array $pluginsConfig): array
     {
@@ -211,11 +245,11 @@ class Nacho implements NachoCoreInterface
     private function getContainerConfig(): ContainerDefinitionsHolder
     {
         return new ContainerDefinitionsHolder(-1, [
-            'debug' => factory(function(Container $c) {
+            'debug' => factory(function (Container $c) {
                 return $c->get(ConfigurationContainer::class)->isDebug();
             }),
             'path' => factory([self::class, 'getPath']),
-            'twigTemplatePath' => factory(function() {
+            'twigTemplatePath' => factory(function () {
                 return $_SERVER['DOCUMENT_ROOT'] . '/src/Views';
             }),
             Nacho::class => $this,

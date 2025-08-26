@@ -11,6 +11,7 @@ class Route implements RouteInterface
     private string $minRole;
     private string $function;
     private array $variables;
+    private array | string $allowedMethods;
     private array $arrRoute;
 
     public function __construct(array $route)
@@ -30,6 +31,10 @@ class Route implements RouteInterface
         if ($this->path !== '/') {
             $this->path = substr($this->path, 1, strlen($this->path));
         }
+        if (!isset($route['allowedMethods'])) {
+            $route['allowedMethods'] = '*';
+        }
+        $this->allowedMethods = $route['allowedMethods'];
     }
 
     public function getVariables(): array
@@ -55,6 +60,23 @@ class Route implements RouteInterface
     public function getFunction(): string
     {
         return $this->function;
+    }
+
+    public function getAllowedMethods(): string | array
+    {
+        return $this->allowedMethods;
+    }
+
+    public function isMethodAllowed(string $method): bool
+    {
+        if ($this->allowedMethods === '*') {
+            return true;
+        } elseif (is_string($this->allowedMethods) && strtoupper($this->allowedMethods) === strtoupper($method)) {
+            return true;
+        } elseif (is_array($this->allowedMethods) && in_array(strtoupper($method), array_map(function(string $method) { return strtoupper($method); }, $this->allowedMethods))) {
+            return true;
+        }
+        return false;
     }
 
     public function match(string $path)
