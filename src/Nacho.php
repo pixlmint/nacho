@@ -159,7 +159,6 @@ class Nacho implements NachoCoreInterface
             ];
         } else {
             $headers = [
-                'Access-Control-Allow-Origin' => '*',
                 'Access-Control-Allow-Methods' => $allowedMethods,
             ];
         }
