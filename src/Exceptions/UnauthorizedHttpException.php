@@ -7,7 +7,7 @@ use Nacho\Models\HttpResponseCode;
 
 class UnauthorizedHttpException extends BaseHttpException
 {
-    protected int $code = HttpResponseCode::UNAUTHORIZED;
+    protected int $httpCode = HttpResponseCode::UNAUTHORIZED;
 }
 
 

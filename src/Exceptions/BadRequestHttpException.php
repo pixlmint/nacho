@@ -6,6 +6,6 @@ use Nacho\Models\HttpResponseCode;
 
 class BadRequestHttpException extends BaseHttpException
 {
-    protected int $code = HttpResponseCode::BAD_REQUEST;
+    protected int $httpCode = HttpResponseCode::BAD_REQUEST;
 }
 

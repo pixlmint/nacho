@@ -6,6 +6,6 @@ use Nacho\Models\HttpResponseCode;
 
 class ForbiddenHttpException extends BaseHttpException
 {
-    protected int $code = HttpResponseCode::FORBIDDEN;
+    protected int $httpCode = HttpResponseCode::FORBIDDEN;
 }
 

@@ -6,6 +6,6 @@ use Nacho\Models\HttpResponseCode;
 
 class NotFoundHttpException extends BaseHttpException
 {
-    protected int $code = HttpResponseCode::NOT_FOUND;
+    protected int $httpCode = HttpResponseCode::NOT_FOUND;
 }
 
