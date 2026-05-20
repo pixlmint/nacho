@@ -221,6 +221,10 @@ class Nacho implements NachoCoreInterface
     {
         $path = $_SERVER['REDIRECT_URL'] ?? $_SERVER['REQUEST_URI'];
 
+        if (str_contains($path, '?')) {
+            $path = explode('?', $path)[0];
+        }
+
         if (str_ends_with($path, '/')) {
             $path = substr($path, 0, strlen($path) - 1);
         }
